@@ -6,107 +6,104 @@
  * @flow strict-local
  */
 
-import React from 'react';
+import React, {useState} from 'react';
 import type {Node} from 'react';
 import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
+    Button,
+    SafeAreaView,
+    StatusBar,
+    StyleSheet,
+    Text,
+    useColorScheme,
+    View,
 } from 'react-native';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-const Section = ({children, title}): Node => {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
+const Header = ({title}): Node => {
+    const isDarkMode = useColorScheme() === 'dark';
+    return (
+        <View style={styles.header}>
+            <Text
+                style={[
+                    styles.title,
+                    {
+                        color: isDarkMode ? "#fff" : "#000",
+                    },
+                ]}>
+                {title}
+            </Text>
+        </View>
+    );
 };
 
 const App: () => Node = () => {
-  const isDarkMode = useColorScheme() === 'dark';
+    const isDarkMode = useColorScheme() === 'dark';
+    let [feedback: string, setFeedback] = useState("Press start to start recording");
+    let [result: boolean, setResult] = useState(false);
 
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.js</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
+    return (
+        <SafeAreaView style={styles.container}>
+            <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'}/>
+            <Header title={"App"}/>
+            <View
+                style={{
+                    color: isDarkMode ? "#fff" : "#000",
+                    flex: 1,
+                }}>
+                <View style={{
+                    flexDirection: 'row',
+                    justifyContent: "center",
+                    alignContent: "center",
+                    padding: 10,
+                }}>
+                    <Text style={styles.word}>"Pære"</Text>
+                    <View style={{
+                        justifyContent: "center",
+                        alignContent: "center",
+                    }}>
+                        <Button title={"Play"} style={{
+                            alignSelf: "center",
+                            textAlign: "center",
+                        }}/>
+                    </View>
+                </View>
+                <Text style={styles.text}>{feedback}</Text>
+            </View>
+            <View style={styles.buttonView}>
+                <Button title={"Start"} onPress={() => {setFeedback("No")}}/>
+            </View>
+        </SafeAreaView>
+    );
 };
 
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
+    container: {
+        flex: 1,
+    },
+    header: {
+        paddingVertical: 10,
+        alignSelf: "stretch",
+        backgroundColor: "#8a2be2"
+    },
+    title: {
+        fontSize: 24,
+        fontWeight: '600',
+        alignSelf: "center",
+    },
+    text: {
+        padding: 20,
+        fontSize: 24,
+        alignSelf: "center"
+    },
+    buttonView: {
+        width: "100%",
+        alignSelf: "center",
+        padding: 50,
+    },
+    word: {
+        fontSize: 48,
+        alignSelf: "center",
+        padding: 10,
+    }
 });
 
 export default App;
