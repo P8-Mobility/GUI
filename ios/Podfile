@@ -12,7 +12,6 @@ target 'GUI' do
     :hermes_enabled => false
   )
 
-
   target 'GUITests' do
     inherit! :complete
     # Pods for testing
