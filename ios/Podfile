@@ -13,8 +13,6 @@ target 'GUI' do
   )
 
 
-  pod 'RNSound', :path => '../node_modules/react-native-sound'
-
   target 'GUITests' do
     inherit! :complete
     # Pods for testing
