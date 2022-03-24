@@ -69,10 +69,10 @@ public class PracticeFragment extends Fragment {
 
                         // Visualize data collection
                         PracticeFragment.this.recordBtn.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
-                        PracticeFragment.this.recordBtn.setText(R.string.recording_exercise);
+                        PracticeFragment.this.recordBtn.setText(R.string.listen);
                         ((TextView) root.findViewById(R.id.exercise_prediction)).setTextColor(Color.BLACK);
                         ((TextView) root.findViewById(R.id.error_on_classification)).setText("");
-                        ((TextView) root.findViewById(R.id.exercise_prediction)).setText(R.string.recording_exercise);
+                        ((TextView) root.findViewById(R.id.exercise_prediction)).setText(R.string.listen);
 
                         break;
                     }

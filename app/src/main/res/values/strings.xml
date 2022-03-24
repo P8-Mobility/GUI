@@ -5,9 +5,10 @@
     <string name="title_ble">SensorTags</string>
     <string name="identifier">Participant identifier</string>
     <string name="delete">Delete</string>
-    <string name="record_repetition">Record pronunciation</string>
-    <string name="pre_prediction_exercise_text">Ready?</string>
-    <string name="recording_exercise">Recording…</string>
+    <string name="record_repetition">Optag udtagelse</string>
+    <string name="press_down">Optager…</string>
+    <string name="pre_prediction_exercise_text">\"Pære\"</string>
+    <string name="listen">Lyt</string>
     <string name="exercise_prediction_failed">Unable to predict exercise</string>
     <string name="optifit_home_screen_image">OptiFit home screen image</string>
     <string name="optifit_tagline">Calisthenic exercise workouts optimized!</string>

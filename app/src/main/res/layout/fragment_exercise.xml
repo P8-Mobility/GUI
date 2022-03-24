@@ -11,33 +11,67 @@
             android:layout_height="wrap_content"
             app:layout_constraintTop_toTopOf="parent"
             android:orientation="vertical">
+
             <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="380dp"
-                android:orientation="vertical"
-                android:layout_marginTop="50dp"
-                android:padding="10dp">
-                <TextView
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/pre_prediction_exercise_text"
-                    android:textAlignment="center"
-                    android:textSize="48sp"
-                    android:textColor="@color/black"
-                    android:id="@+id/exercise_prediction"
-                    android:layout_marginBottom="10dp"/>
+                    android:layout_height="444dp"
+                    android:orientation="vertical"
+                    android:layout_marginTop="50dp"
+                    android:padding="10dp">
+
+                <TableLayout
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent">
+
+                    <TableRow
+                            android:layout_width="fill_parent"
+                            android:layout_height="fill_parent"
+                            android:gravity="center_horizontal">
+
+
+                        <TextView
+                                android:text="@string/pre_prediction_exercise_text"
+                                android:textSize="60sp"
+                                android:layout_margin="20dp"
+                                android:textColor="@color/black"
+                                android:gravity="center_horizontal"
+                                android:id="@+id/exercise_prediction"
+                                android:layout_height="wrap_content"
+                                android:layout_column="1" />
+
+                        <Button
+                                android:gravity="center_vertical"
+                                android:id="@+id/listenBtn"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_margin="10dp"
+                                android:text="@string/listen"
+                                android:drawableRight="@drawable/ic_baseline_volume_up"
+                                android:layout_column="2" />
+
+                    </TableRow>
+                </TableLayout>
+
                 <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingHorizontal="50dp"
-                    android:id="@+id/error_on_classification"/>
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingHorizontal="50dp"
+                        android:id="@+id/error_on_classification" />
+
+
             </LinearLayout>
             <Button
-                android:id="@+id/recordbtn"
-                android:layout_width="match_parent"
-                android:layout_height="92dp"
-                android:layout_margin="10dp"
-                android:text="@string/record_repetition" />
+                    android:id="@+id/recordbtn"
+                    android:layout_width="match_parent"
+                    android:layout_height="92dp"
+                    android:layout_margin="10dp"
+                    android:text="@string/record_repetition"
+                    tools:layout_editor_absoluteY="591dp"
+                    tools:layout_editor_absoluteX="11dp" />
+
         </LinearLayout>
+
+
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

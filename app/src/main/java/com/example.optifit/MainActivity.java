@@ -4,6 +4,7 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.example.optifit.ui.SharedViewModel;
 import com.example.optifit.R;
+import com.example.optifit.ui.practice.PracticeFragment;
 
 import android.graphics.Color;
 import android.media.AudioFormat;
@@ -36,11 +37,10 @@ import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 public class MainActivity extends AppCompatActivity {
     private SharedViewModel model;
     private Button recordBtn;
+    private Button listenBtn;
 
     private Boolean isCollectingData = false;
 
-    //Intializing all variables..
-    private TextView startTV, stopTV, playTV, stopplayTV, statusTV;
     //creating a variable for medi recorder object class.
     private MediaRecorder mRecorder;
     // creating a variable for mediaplayer class
@@ -64,6 +64,9 @@ public class MainActivity extends AppCompatActivity {
 
         recordBtn = (Button) findViewById(R.id.recordbtn);
         recordBtn.setOnTouchListener(getButtonTouchListener());
+
+        listenBtn = (Button) findViewById(R.id.listenBtn);
+        //listenBtn.setOnClickListener();
 
         setRestRequestResponseListener();
         setRestRequestResponseErrorListener();
@@ -216,12 +219,15 @@ public class MainActivity extends AppCompatActivity {
                 int action = event.getAction();
                 switch (action) {
                     case MotionEvent.ACTION_DOWN: {
-                        // Turn pressed button red
+                        // Turn pressed button gray
+                        MainActivity.this.recordBtn.setBackgroundColor(Color.GRAY);
+                        MainActivity.this.recordBtn.setText(R.string.press_down);
                         startRecording();
                         break;
                     }
                     case MotionEvent.ACTION_UP: {
                         // Reset button
+                        MainActivity.this.recordBtn.setText(R.string.record_repetition);
                         stopRecording();
                         playAudio();
                         break;
