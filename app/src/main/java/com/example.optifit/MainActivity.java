@@ -3,17 +3,17 @@ package com.example.optifit;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.example.optifit.ui.SharedViewModel;
+import com.example.optifit.R;
 
 import android.graphics.Color;
 import android.media.AudioFormat;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.os.Environment;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.lifecycle.ViewModelProvider;
 import android.content.pm.PackageManager;
 import android.view.MotionEvent;
@@ -27,6 +27,7 @@ import androidx.core.content.ContextCompat;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 
 import static android.Manifest.permission.RECORD_AUDIO;
@@ -55,9 +56,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.fragment_exercise);
         while (!CheckPermissions()) RequestPermissions();
 
-        setContentView(R.layout.fragment_practice);
         model = new ViewModelProvider(this).get(SharedViewModel.class);
         model.prepare(getApplicationContext());
 
@@ -151,32 +152,36 @@ public class MainActivity extends AppCompatActivity {
         ActivityCompat.requestPermissions(MainActivity.this, new String[]{RECORD_AUDIO, WRITE_EXTERNAL_STORAGE}, REQUEST_AUDIO_PERMISSION_CODE);
     }
     private void startRecording() {
-        recordBtn.setBackgroundColor(getResources().getColor(R.color.gray));
-
-        // We are here initializing our filename variable with the path of the recorded audio file.
-        mFileName = System.getProperty("user.dir");
-        mFileName += "/AudioRecording.wav";
-
-        mRecorder = new MediaRecorder();
-        mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-        mRecorder.setOutputFormat(AudioFormat.ENCODING_PCM_16BIT);
-        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-        mRecorder.setOutputFile(mFileName);
-
-        try {
-            mRecorder.prepare();
-        } catch (IOException e) {
-            Log.e("TAG", "prepare() failed");
+        // check permission method is used to check that the user has granted permission to record nd store the audio.
+        if (CheckPermissions()) {
+            //setbackgroundcolor method will change the background color of text view.
+            //we are here initializing our filename variable with the path of the recorded audio file.
+            mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
+            mFileName += "/AudioRecording.3gp";
+            //below method is used to initialize the media recorder clss
+            mRecorder = new MediaRecorder();
+            //below method is used to set the audio source which we are using a mic.
+            mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+            //below method is used to set the output format of the audio.
+            mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+            //below method is used to set the audio encoder for our recorded audio.
+            mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+            //below method is used to set the output file location for our recorded audio
+            mRecorder.setOutputFile(mFileName);
+            try {
+                //below mwthod will prepare our audio recorder class
+                mRecorder.prepare();
+            } catch (IOException e) {
+                Log.e("TAG", "prepare() failed");
+            }
+            // start method will start the audio recording.
+            mRecorder.start();
+        } else {
+            //if audio recording permissions are not granted by user below method will ask for runtime permission for mic and storage.
+            RequestPermissions();
         }
-        mRecorder.start();
-        statusTV.setText("Recording Started");
     }
-
     public void playAudio() {
-        stopTV.setBackgroundColor(getResources().getColor(R.color.gray));
-        startTV.setBackgroundColor(getResources().getColor(R.color.purple_200));
-        playTV.setBackgroundColor(getResources().getColor(R.color.gray));
-        stopplayTV.setBackgroundColor(getResources().getColor(R.color.purple_200));
         //for playing our recorded audio we are using media player class.
         mPlayer = new MediaPlayer();
         try {
@@ -186,7 +191,6 @@ public class MainActivity extends AppCompatActivity {
             mPlayer.prepare();
             //below method will start our media player.
             mPlayer.start();
-            statusTV.setText("Recording Started Playing");
         } catch (IOException e) {
             Log.e("TAG", "prepare() failed");
         }
@@ -195,33 +199,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void stopRecording() {
-        recordBtn.setBackgroundColor(getResources().getColor(R.color.purple_500));
+        recordBtn.setBackgroundColor(getResources().getColor(R.color.light_blue_400));
         //below method will stop the audio recording.
         mRecorder.stop();
         //below method will release the media recorder class.
         mRecorder.release();
         mRecorder = null;
-        statusTV.setText("Recording Stopped");
 
     }
 
-    public void pausePlaying() {
-        //this method will release the media player class and pause the playing of our recorded audio.
-        mPlayer.release();
-        mPlayer = null;
-        stopTV.setBackgroundColor(getResources().getColor(R.color.gray));
-        startTV.setBackgroundColor(getResources().getColor(R.color.purple_200));
-        playTV.setBackgroundColor(getResources().getColor(R.color.purple_200));
-        stopplayTV.setBackgroundColor(getResources().getColor(R.color.gray));
-        statusTV.setText("Recording Play Stopped");
-
-    }
 
     private View.OnTouchListener getButtonTouchListener() {
         return new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                switch (event.getAction()) {
+                int action = event.getAction();
+                switch (action) {
                     case MotionEvent.ACTION_DOWN: {
                         // Turn pressed button red
                         startRecording();
@@ -230,6 +223,7 @@ public class MainActivity extends AppCompatActivity {
                     case MotionEvent.ACTION_UP: {
                         // Reset button
                         stopRecording();
+                        playAudio();
                         break;
                     }
                 }

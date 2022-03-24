@@ -34,7 +34,7 @@ import org.json.JSONObject;
 
 public class PracticeFragment extends Fragment {
 
-    private PracticeViewModel practiceViewModel;
+
     private SharedViewModel model;
     private ConstraintLayout root;
     private Button recordBtn;
@@ -43,7 +43,7 @@ public class PracticeFragment extends Fragment {
 
     @SuppressLint("ClickableViewAccessibility")
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        practiceViewModel = new ViewModelProvider(this).get(PracticeViewModel.class);
+
         model = new ViewModelProvider(requireActivity()).get(SharedViewModel.class);
 
         root = (ConstraintLayout) inflater.inflate(R.layout.fragment_exercise, container, false);
