@@ -48,6 +48,8 @@ public class MainActivity extends AppCompatActivity {
     //string variable is created for storing a file name
     private static String mFileName = null;
 
+    private boolean recordingStarted = false;
+
 
     // constant for storing audio permission
     public static final int REQUEST_AUDIO_PERMISSION_CODE = 1;
@@ -64,12 +66,17 @@ public class MainActivity extends AppCompatActivity {
 
         recordBtn = (Button) findViewById(R.id.recordbtn);
         recordBtn.setOnTouchListener(getButtonTouchListener());
+        recordBtn.setOnClickListener(getButtonClickListener());
 
         listenBtn = (Button) findViewById(R.id.listenBtn);
         //listenBtn.setOnClickListener();
 
         setRestRequestResponseListener();
         setRestRequestResponseErrorListener();
+    }
+
+    private View.OnClickListener getButtonClickListener() {
+        return null; //Used to ensure the app dosen't crash when the user clicks instead of holding
     }
 
     private void setRestRequestResponseListener() {
@@ -179,6 +186,7 @@ public class MainActivity extends AppCompatActivity {
             }
             // start method will start the audio recording.
             mRecorder.start();
+            recordingStarted = true;
         } else {
             //if audio recording permissions are not granted by user below method will ask for runtime permission for mic and storage.
             RequestPermissions();
@@ -202,13 +210,19 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void stopRecording() {
-        recordBtn.setBackgroundColor(getResources().getColor(R.color.light_blue_400));
-        //below method will stop the audio recording.
-        mRecorder.stop();
-        //below method will release the media recorder class.
-        mRecorder.release();
-        mRecorder = null;
-
+        try{
+            if(recordingStarted) {
+                //below method will stop the audio recording.
+                mRecorder.stop();
+                //below method will release the media recorder class.
+                mRecorder.release();
+                mRecorder = null;
+            }
+            recordingStarted = false;
+        }
+        catch (Exception e){
+            Log.e("TAG", "prepare() failed");
+        }
     }
 
 
@@ -227,6 +241,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     case MotionEvent.ACTION_UP: {
                         // Reset button
+                        recordBtn.setBackgroundColor(getResources().getColor(R.color.light_blue_400));
                         MainActivity.this.recordBtn.setText(R.string.record_repetition);
                         stopRecording();
                         playAudio();
@@ -236,5 +251,7 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         };
+
+
     }
 }
