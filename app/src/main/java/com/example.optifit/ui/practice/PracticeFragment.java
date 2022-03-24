@@ -71,7 +71,6 @@ public class PracticeFragment extends Fragment {
                         PracticeFragment.this.recordBtn.setBackgroundTintList(ColorStateList.valueOf(Color.RED));
                         PracticeFragment.this.recordBtn.setText(R.string.listen);
                         ((TextView) root.findViewById(R.id.exercise_prediction)).setTextColor(Color.BLACK);
-                        ((TextView) root.findViewById(R.id.error_on_classification)).setText("");
                         ((TextView) root.findViewById(R.id.exercise_prediction)).setText(R.string.listen);
 
                         break;
@@ -105,7 +104,6 @@ public class PracticeFragment extends Fragment {
                 try {
                     JSONObject result = new JSONObject(response);
                     if (result.getString("status").equals("OK") && isCollectingData) {
-                        ((TextView) root.findViewById(R.id.error_on_classification)).setText("");
                         if (result.getString("exercise").equals("00000000-0000-0000-0000-000000000000")) {
                             TextView prediction = root.findViewById(R.id.exercise_prediction);
                             //prediction.setText(ExerciseConverter.getExerciseFromUUID(result.getString("exercise")));

@@ -14,7 +14,7 @@
 
             <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="444dp"
+                    android:layout_height="164dp"
                     android:orientation="vertical"
                     android:layout_marginTop="50dp"
                     android:padding="10dp">
@@ -51,25 +51,32 @@
 
                     </TableRow>
                 </TableLayout>
-
-                <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:paddingHorizontal="50dp"
-                        android:id="@+id/error_on_classification" />
-
-
             </LinearLayout>
-            <Button
-                    android:id="@+id/recordbtn"
-                    android:layout_width="match_parent"
-                    android:layout_height="92dp"
-                    android:layout_margin="10dp"
-                    android:text="@string/record_repetition"
-                    tools:layout_editor_absoluteY="591dp"
-                    tools:layout_editor_absoluteX="11dp" />
 
-        </LinearLayout>
+            <TextView
+                    android:layout_margin="10dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="95dp"
+                    android:text="@string/beforeRecordingText"
+                    android:textSize="20sp"
+                    android:gravity="center_horizontal" />
+
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dip"
+                    android:layout_weight="1"
+                    android:gravity="bottom"/>
+                <Button
+                        android:id="@+id/recordbtn"
+                        android:layout_width="match_parent"
+                        android:layout_height="92dp"
+                        android:layout_margin="10dp"
+                        android:text="@string/record_repetition"
+                        tools:layout_editor_absoluteY="591dp"
+                        tools:layout_editor_absoluteX="11dp" />
+            </LinearLayout>
+
+
 
 
 

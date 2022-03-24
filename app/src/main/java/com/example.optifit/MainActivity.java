@@ -45,6 +45,7 @@ public class MainActivity extends AppCompatActivity {
     private MediaRecorder mRecorder;
     // creating a variable for mediaplayer class
     private MediaPlayer mPlayer;
+    private MediaPlayer fluentPlayer;
     //string variable is created for storing a file name
     private static String mFileName = null;
 
@@ -59,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_exercise);
+        fluentPlayer = MediaPlayer.create(this, R.raw.paere);
         while (!CheckPermissions()) RequestPermissions();
 
         model = new ViewModelProvider(this).get(SharedViewModel.class);
@@ -69,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
         recordBtn.setOnClickListener(getButtonClickListener());
 
         listenBtn = (Button) findViewById(R.id.listenBtn);
+        listenBtn.setOnClickListener(getListenButtonClickListener());
         //listenBtn.setOnClickListener();
 
         setRestRequestResponseListener();
@@ -86,7 +89,6 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     JSONObject result = new JSONObject(response);
                     if (result.getString("status").equals("OK") && isCollectingData) {
-                        ((TextView) findViewById(R.id.error_on_classification)).setText("");
                         if (result.getString("exercise").equals("00000000-0000-0000-0000-000000000000")) {
                             TextView prediction = findViewById(R.id.exercise_prediction);
                             prediction.setTextColor(Color.BLACK);
@@ -209,6 +211,12 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    public void playFluentSound() {
+        //for playing our recorded audio we are using media player class.
+        fluentPlayer.start();
+    }
+
+
     public void stopRecording() {
         try{
             if(recordingStarted) {
@@ -251,7 +259,15 @@ public class MainActivity extends AppCompatActivity {
                 return true;
             }
         };
-
-
     }
+        private View.OnClickListener getListenButtonClickListener() {
+            return new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    playFluentSound();
+                }
+            };
+
+        }
+
 }

@@ -14,4 +14,8 @@
     <string name="optifit_tagline">Calisthenic exercise workouts optimized!</string>
     <string name="not_found">Not found</string>
     <string name="connected">Connected</string>
+    <string name="beforeRecordingText">Tryk på knappen for at få bedømt din udtalelse</string>
+    <string name="duringRecordingText">Lytter!</string>
+    <string name="afterPositiveRecordingText">Godt klaret!</string>
+    <string name="afterNegativeRecordingText">Connected</string>
 </resources>
