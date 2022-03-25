@@ -1,7 +1,13 @@
 package com.example.optifit;
 
+import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
+import com.android.volley.NetworkResponse;
+import com.android.volley.toolbox.BasicNetwork;
+import com.android.volley.toolbox.DiskBasedCache;
+import com.android.volley.toolbox.HurlStack;
+import com.android.volley.toolbox.Volley;
 import com.example.optifit.ui.SharedViewModel;
 import com.example.optifit.R;
 import com.example.optifit.ui.practice.PracticeFragment;
@@ -28,11 +34,19 @@ import androidx.core.content.ContextCompat;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 
 import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
+import static android.Manifest.permission.INTERNET;
+
+
+import uk.me.hardill.volley.multipart.MultipartRequest;
 
 public class MainActivity extends AppCompatActivity {
     private SharedViewModel model;
@@ -50,7 +64,10 @@ public class MainActivity extends AppCompatActivity {
     private static String mFileName = null;
 
     private boolean recordingStarted = false;
+    private String postUrl = "http://srv01.libdom.net:8080/predict";
+    private byte[] recordedSound;
 
+    private RequestQueue requestQueue;
 
     // constant for storing audio permission
     public static final int REQUEST_AUDIO_PERMISSION_CODE = 1;
@@ -74,55 +91,35 @@ public class MainActivity extends AppCompatActivity {
         listenBtn.setOnClickListener(getListenButtonClickListener());
         //listenBtn.setOnClickListener();
 
+        requestQueue = Volley.newRequestQueue(getApplicationContext());
         setRestRequestResponseListener();
         setRestRequestResponseErrorListener();
+
     }
 
     private View.OnClickListener getButtonClickListener() {
         return null; //Used to ensure the app dosen't crash when the user clicks instead of holding
     }
 
-    private void setRestRequestResponseListener() {
-        model.restRequestHandler.setResponseListener(new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                try {
-                    JSONObject result = new JSONObject(response);
-                    if (result.getString("status").equals("OK") && isCollectingData) {
-                        if (result.getString("exercise").equals("00000000-0000-0000-0000-000000000000")) {
-                            TextView prediction = findViewById(R.id.exercise_prediction);
-                            prediction.setTextColor(Color.BLACK);
-                        } else {
-                            boolean errorResult = result.getInt("mistakes") == 0;
-                            String classificationResult = errorResult ? "Good" : "Bad";
-                            classificationResult += " ";
-
-                            TextView prediction = findViewById(R.id.exercise_prediction);
-                            prediction.setText(classificationResult);
-
-                            if (errorResult) {
-                                prediction.setTextColor(getResources().getColor(R.color.connectedSensorColor));
-                            } else {
-                                prediction.setTextColor(Color.RED);
-                            }
-                        }
-
+    private void setRestRequestResponseListener(){
+        MultipartRequest request = new MultipartRequest(postUrl, null,
+                new Response.Listener<NetworkResponse>() {
+                    @Override
+                    public void onResponse(NetworkResponse response) {
+                        System.out.println("det virker!!!!!!!!!!!!!!!!");
                     }
-//                    If an error occurred (most often due to too few data points), the below prints an error message in the app.
-//                    Removed after continuous classification implementation, as it should never happen and should just be ignored if it does.
-//                    Succeeding classifications will replace the preceding classification after new data bhs been collected
-//                    else {
-//                        TextView error_on_classification = root.findViewById(R.id.error_on_classification);
-//                        error_on_classification.setText(result.getString("message"));
-//                        TextView prediction = root.findViewById(R.id.exercise_prediction);
-//                        prediction.setText(R.string.exercise_prediction_failed);
-//                        prediction.setTextColor(Color.RED);
-//                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+                },
+                new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+                        System.out.println("SE HER!!!!!!!" + error.getMessage());
+                    }
+                });
+
+        //request.addPart(new MultipartRequest.FormPart(fieldName,value));
+        request.addPart(new MultipartRequest.FilePart("file", "audio/wav", mFileName, recordedSound));
+
+        requestQueue.add(request);
     }
 
     private void setRestRequestResponseErrorListener() {
@@ -161,7 +158,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void RequestPermissions() {
         // this method is used to request the permission for audio recording and storage.
-        ActivityCompat.requestPermissions(MainActivity.this, new String[]{RECORD_AUDIO, WRITE_EXTERNAL_STORAGE}, REQUEST_AUDIO_PERMISSION_CODE);
+        ActivityCompat.requestPermissions(MainActivity.this, new String[]{RECORD_AUDIO, INTERNET, WRITE_EXTERNAL_STORAGE}, REQUEST_AUDIO_PERMISSION_CODE);
     }
     private void startRecording() {
         // check permission method is used to check that the user has granted permission to record nd store the audio.
@@ -169,15 +166,14 @@ public class MainActivity extends AppCompatActivity {
             //setbackgroundcolor method will change the background color of text view.
             //we are here initializing our filename variable with the path of the recorded audio file.
             mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
-            mFileName += "/AudioRecording.3gp";
+            mFileName += "/AudioRecording.wav";
             //below method is used to initialize the media recorder clss
             mRecorder = new MediaRecorder();
             //below method is used to set the audio source which we are using a mic.
+            mRecorder = new MediaRecorder();
             mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-            //below method is used to set the output format of the audio.
-            mRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-            //below method is used to set the audio encoder for our recorded audio.
-            mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+            mRecorder.setOutputFormat(AudioFormat.ENCODING_PCM_16BIT);
+            mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
             //below method is used to set the output file location for our recorded audio
             mRecorder.setOutputFile(mFileName);
             try {
@@ -230,6 +226,21 @@ public class MainActivity extends AppCompatActivity {
         }
         catch (Exception e){
             Log.e("TAG", "prepare() failed");
+        }
+        createByteArr();
+        setRestRequestResponseListener();
+    }
+
+    private void createByteArr() {
+        try {
+            File file = new File(mFileName);
+            InputStream fis = new FileInputStream(file);
+            byte[] buffer = new byte[(int) file.length()];
+            fis.read(buffer, 0, buffer.length);
+            fis.close();
+            recordedSound = buffer;
+        } catch (Exception e) {
+
         }
     }
 
