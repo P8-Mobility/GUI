@@ -1,198 +1,203 @@
 package com.example.optifit;
 
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
-import com.android.volley.NetworkResponse;
-import com.android.volley.toolbox.BasicNetwork;
-import com.android.volley.toolbox.DiskBasedCache;
-import com.android.volley.toolbox.HurlStack;
 import com.android.volley.toolbox.Volley;
 import com.example.optifit.ui.SharedViewModel;
-import com.example.optifit.R;
-import com.example.optifit.ui.practice.PracticeFragment;
 
 import android.graphics.Color;
 import android.media.AudioFormat;
+import android.media.AudioRecord;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import android.content.pm.PackageManager;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.Manifest.permission.INTERNET;
 
 
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+
 import uk.me.hardill.volley.multipart.MultipartRequest;
 
 public class MainActivity extends AppCompatActivity {
     private SharedViewModel model;
     private Button recordBtn;
-    private Button listenBtn;
 
-    private Boolean isCollectingData = false;
+    // Sound recording
+    public static final int REQUEST_AUDIO_PERMISSION_CODE = 1;
+    private AudioRecord mRecorder;
+    private static final String mFileName = Environment.getExternalStorageDirectory().getAbsolutePath() + "/recording.wav" ;
 
-    //creating a variable for medi recorder object class.
-    private MediaRecorder mRecorder;
-    // creating a variable for mediaplayer class
-    private MediaPlayer mPlayer;
-    private MediaPlayer fluentPlayer;
-    //string variable is created for storing a file name
-    private static String mFileName = null;
-
+    private MediaPlayer fluentPlayer; // for example sound
     private boolean recordingStarted = false;
-    private String postUrl = "http://srv01.libdom.net:8080/predict";
-    private byte[] recordedSound;
 
+    private byte[] recordedSound;
     private RequestQueue requestQueue;
 
-    // constant for storing audio permission
-    public static final int REQUEST_AUDIO_PERMISSION_CODE = 1;
+    private final int sr = 44100;
+    private final int channelConfig = AudioFormat.CHANNEL_IN_MONO;
+    private final int audioFormat = AudioFormat.ENCODING_PCM_FLOAT;
+    private final int bufferSize = AudioRecord.getMinBufferSize(sr, channelConfig, audioFormat) * 2;
+    private Thread recordingThread = null;
+    private final AtomicBoolean recordingInProgress = new AtomicBoolean(false);
 
     @SuppressLint({"RestrictedApi", "ClickableViewAccessibility"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_exercise);
-        fluentPlayer = MediaPlayer.create(this, R.raw.paere);
+
         while (!CheckPermissions()) RequestPermissions();
 
         model = new ViewModelProvider(this).get(SharedViewModel.class);
         model.prepare(getApplicationContext());
 
-        recordBtn = (Button) findViewById(R.id.recordbtn);
+        fluentPlayer = MediaPlayer.create(this, R.raw.paere);
+
+        recordBtn = findViewById(R.id.recordbtn);
         recordBtn.setOnTouchListener(getButtonTouchListener());
         recordBtn.setOnClickListener(getButtonClickListener());
 
-        listenBtn = (Button) findViewById(R.id.listenBtn);
+        Button listenBtn = findViewById(R.id.listenBtn);
         listenBtn.setOnClickListener(getListenButtonClickListener());
-        //listenBtn.setOnClickListener();
 
-        requestQueue = Volley.newRequestQueue(getApplicationContext());
-        setRestRequestResponseListener();
         setRestRequestResponseErrorListener();
-
+        requestQueue = Volley.newRequestQueue(getApplicationContext());
     }
 
     private View.OnClickListener getButtonClickListener() {
-        return null; //Used to ensure the app dosen't crash when the user clicks instead of holding
+        //Used to ensure the app doesn't crash when the user clicks button instead of holding it down
+        return null;
     }
 
-    private void setRestRequestResponseListener(){
-        MultipartRequest request = new MultipartRequest(postUrl, null,
-                new Response.Listener<NetworkResponse>() {
-                    @Override
-                    public void onResponse(NetworkResponse response) {
-                        System.out.println("det virker!!!!!!!!!!!!!!!!");
-                    }
-                },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-                        System.out.println("SE HER!!!!!!!" + error.getMessage());
-                    }
-                });
+    private void setRestRequestResponseListener() {
+        try{
+            String result = new FileUploader().execute().get();
+        }
+        catch (Exception e){
 
-        //request.addPart(new MultipartRequest.FormPart(fieldName,value));
-        request.addPart(new MultipartRequest.FilePart("file", "audio/wav", mFileName, recordedSound));
-
-        requestQueue.add(request);
+        }
     }
 
     private void setRestRequestResponseErrorListener() {
-        model.restRequestHandler.setResponseErrorListener(new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e("VOLLEY", error.toString());
-            }
-        });
+        model.restRequestHandler.setResponseErrorListener(error -> Log.e("VOLLEY", error.toString()));
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         // this method is called when user will grant the permission for audio recording.
-        switch (requestCode) {
-            case REQUEST_AUDIO_PERMISSION_CODE:
-                if (grantResults.length > 0) {
-                    boolean permissionToRecord = grantResults[0] == PackageManager.PERMISSION_GRANTED;
-                    boolean permissionToStore = grantResults[1] == PackageManager.PERMISSION_GRANTED;
-                    if (permissionToRecord && permissionToStore) {
-                        Toast.makeText(getApplicationContext(), "Permission Granted", Toast.LENGTH_LONG).show();
-                    } else {
-                        Toast.makeText(getApplicationContext(), "Permission Denied", Toast.LENGTH_LONG).show();
-                    }
+        if (requestCode == REQUEST_AUDIO_PERMISSION_CODE) {
+            if (grantResults.length > 0) {
+                boolean permissionToRecord = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+                boolean permissionToStore = grantResults[1] == PackageManager.PERMISSION_GRANTED;
+                if (permissionToRecord && permissionToStore) {
+                    Toast.makeText(getApplicationContext(), "Permission Granted", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(getApplicationContext(), "Permission Denied", Toast.LENGTH_LONG).show();
                 }
-                break;
+            }
         }
     }
 
     public boolean CheckPermissions() {
-        //this method is used to check permission
+        //this method is used to check whether permissions have been granted
         int result = ContextCompat.checkSelfPermission(getApplicationContext(), WRITE_EXTERNAL_STORAGE);
         int result1 = ContextCompat.checkSelfPermission(getApplicationContext(), RECORD_AUDIO);
         return result == PackageManager.PERMISSION_GRANTED && result1 == PackageManager.PERMISSION_GRANTED;
     }
 
     private void RequestPermissions() {
-        // this method is used to request the permission for audio recording and storage.
         ActivityCompat.requestPermissions(MainActivity.this, new String[]{RECORD_AUDIO, INTERNET, WRITE_EXTERNAL_STORAGE}, REQUEST_AUDIO_PERMISSION_CODE);
     }
+
     private void startRecording() {
-        // check permission method is used to check that the user has granted permission to record nd store the audio.
         if (CheckPermissions()) {
-            //setbackgroundcolor method will change the background color of text view.
-            //we are here initializing our filename variable with the path of the recorded audio file.
-            mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
-            mFileName += "/AudioRecording.wav";
-            //below method is used to initialize the media recorder clss
-            mRecorder = new MediaRecorder();
-            //below method is used to set the audio source which we are using a mic.
-            mRecorder = new MediaRecorder();
-            mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-            mRecorder.setOutputFormat(AudioFormat.ENCODING_PCM_16BIT);
-            mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-            //below method is used to set the output file location for our recorded audio
-            mRecorder.setOutputFile(mFileName);
-            try {
-                //below mwthod will prepare our audio recorder class
-                mRecorder.prepare();
-            } catch (IOException e) {
-                Log.e("TAG", "prepare() failed");
-            }
-            // start method will start the audio recording.
-            mRecorder.start();
+            mRecorder = new AudioRecord(MediaRecorder.AudioSource.DEFAULT, sr, channelConfig, audioFormat, bufferSize);
+
+
+            mRecorder.startRecording();
             recordingStarted = true;
+            recordingInProgress.set(true);
+
+            recordingThread = new Thread(new RecordingRunnable(), "Recording Thread");
+            recordingThread.start();
+
         } else {
-            //if audio recording permissions are not granted by user below method will ask for runtime permission for mic and storage.
             RequestPermissions();
         }
     }
+
+    private class RecordingRunnable implements Runnable {
+
+        @Override
+        public void run() {
+            final File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), "recording.wav");
+            final ByteBuffer buffer = ByteBuffer.allocateDirect(bufferSize);
+
+            try (final FileOutputStream outStream = new FileOutputStream(file)) {
+                while (recordingInProgress.get()) {
+                    int result = mRecorder.read(buffer, bufferSize);
+                    if (result < 0) {
+                        throw new RuntimeException("Reading of audio buffer failed: " +
+                                getBufferReadFailureReason(result));
+                    }
+                    outStream.write(buffer.array(), 0, bufferSize);
+                    buffer.clear();
+                }
+            } catch (IOException e) {
+                throw new RuntimeException("Writing of recorded audio failed", e);
+            }
+        }
+    }
+
+    private String getBufferReadFailureReason(int errorCode) {
+        switch (errorCode) {
+            case AudioRecord.ERROR_INVALID_OPERATION:
+                return "ERROR_INVALID_OPERATION";
+            case AudioRecord.ERROR_BAD_VALUE:
+                return "ERROR_BAD_VALUE";
+            case AudioRecord.ERROR_DEAD_OBJECT:
+                return "ERROR_DEAD_OBJECT";
+            case AudioRecord.ERROR:
+                return "ERROR";
+            default:
+                return "Unknown (" + errorCode + ")";
+        }
+    }
+
     public void playAudio() {
         //for playing our recorded audio we are using media player class.
-        mPlayer = new MediaPlayer();
+        // for recorded sound
+        MediaPlayer mPlayer = new MediaPlayer();
         try {
             //below method is used to set the data source which will be our file name
             mPlayer.setDataSource(mFileName);
@@ -203,8 +208,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             Log.e("TAG", "prepare() failed");
         }
-
-
     }
 
     public void playFluentSound() {
@@ -212,19 +215,20 @@ public class MainActivity extends AppCompatActivity {
         fluentPlayer.start();
     }
 
-
     public void stopRecording() {
-        try{
-            if(recordingStarted) {
-                //below method will stop the audio recording.
+        if (null == mRecorder){
+            return;
+        }
+        try {
+            if (recordingInProgress.get()) {
+                recordingInProgress.set(false);
                 mRecorder.stop();
-                //below method will release the media recorder class.
                 mRecorder.release();
                 mRecorder = null;
+                recordingThread = null;
             }
             recordingStarted = false;
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             Log.e("TAG", "prepare() failed");
         }
         createByteArr();
@@ -233,52 +237,39 @@ public class MainActivity extends AppCompatActivity {
 
     private void createByteArr() {
         try {
-            File file = new File(mFileName);
-            InputStream fis = new FileInputStream(file);
-            byte[] buffer = new byte[(int) file.length()];
-            fis.read(buffer, 0, buffer.length);
-            fis.close();
-            recordedSound = buffer;
+            recordedSound = Files.readAllBytes(Paths.get(mFileName));
         } catch (Exception e) {
-
+            Log.e("ByteArr", "Failed to create byte array");
         }
     }
 
 
     private View.OnTouchListener getButtonTouchListener() {
-        return new View.OnTouchListener() {
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                int action = event.getAction();
-                switch (action) {
-                    case MotionEvent.ACTION_DOWN: {
-                        // Turn pressed button gray
-                        MainActivity.this.recordBtn.setBackgroundColor(Color.GRAY);
-                        MainActivity.this.recordBtn.setText(R.string.press_down);
-                        startRecording();
-                        break;
-                    }
-                    case MotionEvent.ACTION_UP: {
-                        // Reset button
-                        recordBtn.setBackgroundColor(getResources().getColor(R.color.light_blue_400));
-                        MainActivity.this.recordBtn.setText(R.string.record_repetition);
-                        stopRecording();
-                        playAudio();
-                        break;
-                    }
+        return (v, event) -> {
+            v.performClick();
+            int action = event.getAction();
+            switch (action) {
+                case MotionEvent.ACTION_DOWN: {
+                    // Turn pressed button gray
+                    MainActivity.this.recordBtn.setBackgroundColor(Color.GRAY);
+                    MainActivity.this.recordBtn.setText(R.string.press_down);
+                    startRecording();
+                    break;
                 }
-                return true;
+                case MotionEvent.ACTION_UP: {
+                    // Reset button
+                    recordBtn.setBackgroundColor(getResources().getColor(R.color.light_blue_400));
+                    MainActivity.this.recordBtn.setText(R.string.record_repetition);
+                    stopRecording();
+                    playAudio();
+                    break;
+                }
             }
+            return true;
         };
     }
-        private View.OnClickListener getListenButtonClickListener() {
-            return new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    playFluentSound();
-                }
-            };
 
-        }
-
+    private View.OnClickListener getListenButtonClickListener() {
+        return v -> playFluentSound();
+    }
 }
