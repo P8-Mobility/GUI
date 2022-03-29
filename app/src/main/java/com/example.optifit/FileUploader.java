@@ -24,6 +24,7 @@ public class FileUploader extends AsyncTask<Void, Void, String> {
                     .data("text", "value")
                     .data("file", file.getName(), fs)
                     .userAgent("Mozilla")
+                    .header("Authorization", "Bearer 70f07f7b8b1211a7a25c7d0cb2ecb5c082abe80189119b2f0a1c0a0b72dd6d28")
                     .method(Connection.Method.POST)
                     .ignoreContentType(true)
                     .execute();

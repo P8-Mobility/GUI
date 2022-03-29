@@ -77,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
             Gson gson = new Gson();
             Map<String, String> asMap = gson.fromJson(result, Map.class);
             if(asMap.containsKey("status")){
-                responseTxt.setText("Vi høre dig sige: " + asMap.get("result"));
+                responseTxt.setText("Vi hørte dig sige: " + asMap.get("result"));
             }
         }
         catch (Exception e){
