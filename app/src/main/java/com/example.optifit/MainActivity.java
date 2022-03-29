@@ -1,6 +1,5 @@
 package com.example.optifit;
 
-
 import com.google.gson.Gson;
 
 import android.graphics.Color;
@@ -25,6 +24,7 @@ import androidx.core.content.ContextCompat;
 
 import java.io.IOException;
 import java.util.Map;
+
 import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.Manifest.permission.INTERNET;
@@ -40,8 +40,6 @@ public class MainActivity extends AppCompatActivity {
 
     private MediaPlayer fluentPlayer; // for example sound
     private boolean recordingStarted = false;
-
-
 
     @SuppressLint({"RestrictedApi", "ClickableViewAccessibility"})
     @Override
@@ -70,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
         return null;
     }
 
-
     private void setRestRequestResponseListener() {
         try{
             String result = new FileUploader().execute().get();
@@ -85,8 +82,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-        private void setRestRequestResponseErrorListener() {
+    private void setRestRequestResponseErrorListener() {
     }
 
     @Override
@@ -146,7 +142,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
     public void playAudio() {
         //for playing our recorded audio we are using media player class.
         // for recorded sound
@@ -184,8 +179,6 @@ public class MainActivity extends AppCompatActivity {
         }
         setRestRequestResponseListener();
     }
-
-
 
     private View.OnTouchListener getButtonTouchListener() {
         return (v, event) -> {
