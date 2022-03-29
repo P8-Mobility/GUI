@@ -54,8 +54,8 @@ public class MainActivity extends AppCompatActivity {
 
     // Sound recording
     public static final int REQUEST_AUDIO_PERMISSION_CODE = 1;
-    private AudioRecord mRecorder;
-    private static final String mFileName = Environment.getExternalStorageDirectory().getAbsolutePath() + "/recording.wav" ;
+    private MediaRecorder mRecorder;
+    private static String mFileName = Environment.getExternalStorageDirectory().getAbsolutePath() + "/recording.wav" ;
 
     private MediaPlayer fluentPlayer; // for example sound
     private boolean recordingStarted = false;
@@ -63,12 +63,8 @@ public class MainActivity extends AppCompatActivity {
     private byte[] recordedSound;
     private RequestQueue requestQueue;
 
-    private final int sr = 44100;
-    private final int channelConfig = AudioFormat.CHANNEL_IN_MONO;
-    private final int audioFormat = AudioFormat.ENCODING_PCM_FLOAT;
-    private final int bufferSize = AudioRecord.getMinBufferSize(sr, channelConfig, audioFormat) * 2;
+
     private Thread recordingThread = null;
-    private final AtomicBoolean recordingInProgress = new AtomicBoolean(false);
 
     @SuppressLint({"RestrictedApi", "ClickableViewAccessibility"})
     @Override
@@ -99,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
         return null;
     }
 
+
     private void setRestRequestResponseListener() {
         try{
             String result = new FileUploader().execute().get();
@@ -108,7 +105,8 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void setRestRequestResponseErrorListener() {
+
+        private void setRestRequestResponseErrorListener() {
         model.restRequestHandler.setResponseErrorListener(error -> Log.e("VOLLEY", error.toString()));
     }
 
@@ -140,59 +138,36 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startRecording() {
+        // check permission method is used to check that the user has granted permission to record nd store the audio.
         if (CheckPermissions()) {
-            mRecorder = new AudioRecord(MediaRecorder.AudioSource.DEFAULT, sr, channelConfig, audioFormat, bufferSize);
-
-
-            mRecorder.startRecording();
+            //setbackgroundcolor method will change the background color of text view.
+            //we are here initializing our filename variable with the path of the recorded audio file.
+            mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
+            mFileName += "/AudioRecording.wav";
+            //below method is used to initialize the media recorder clss
+            mRecorder = new MediaRecorder();
+            //below method is used to set the audio source which we are using a mic.
+            mRecorder = new MediaRecorder();
+            mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+            mRecorder.setOutputFormat(AudioFormat.ENCODING_PCM_16BIT);
+            mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+            //below method is used to set the output file location for our recorded audio
+            mRecorder.setOutputFile(mFileName);
+            try {
+                //below mwthod will prepare our audio recorder class
+                mRecorder.prepare();
+            } catch (IOException e) {
+                Log.e("TAG", "prepare() failed");
+            }
+            // start method will start the audio recording.
+            mRecorder.start();
             recordingStarted = true;
-            recordingInProgress.set(true);
-
-            recordingThread = new Thread(new RecordingRunnable(), "Recording Thread");
-            recordingThread.start();
-
         } else {
+            //if audio recording permissions are not granted by user below method will ask for runtime permission for mic and storage.
             RequestPermissions();
         }
     }
 
-    private class RecordingRunnable implements Runnable {
-
-        @Override
-        public void run() {
-            final File file = new File(Environment.getExternalStorageDirectory().getAbsolutePath(), "recording.wav");
-            final ByteBuffer buffer = ByteBuffer.allocateDirect(bufferSize);
-
-            try (final FileOutputStream outStream = new FileOutputStream(file)) {
-                while (recordingInProgress.get()) {
-                    int result = mRecorder.read(buffer, bufferSize);
-                    if (result < 0) {
-                        throw new RuntimeException("Reading of audio buffer failed: " +
-                                getBufferReadFailureReason(result));
-                    }
-                    outStream.write(buffer.array(), 0, bufferSize);
-                    buffer.clear();
-                }
-            } catch (IOException e) {
-                throw new RuntimeException("Writing of recorded audio failed", e);
-            }
-        }
-    }
-
-    private String getBufferReadFailureReason(int errorCode) {
-        switch (errorCode) {
-            case AudioRecord.ERROR_INVALID_OPERATION:
-                return "ERROR_INVALID_OPERATION";
-            case AudioRecord.ERROR_BAD_VALUE:
-                return "ERROR_BAD_VALUE";
-            case AudioRecord.ERROR_DEAD_OBJECT:
-                return "ERROR_DEAD_OBJECT";
-            case AudioRecord.ERROR:
-                return "ERROR";
-            default:
-                return "Unknown (" + errorCode + ")";
-        }
-    }
 
     public void playAudio() {
         //for playing our recorded audio we are using media player class.
@@ -220,8 +195,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         try {
-            if (recordingInProgress.get()) {
-                recordingInProgress.set(false);
+            if (true) {
                 mRecorder.stop();
                 mRecorder.release();
                 mRecorder = null;
