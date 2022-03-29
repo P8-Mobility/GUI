@@ -3,6 +3,7 @@ package com.example.optifit;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.Volley;
 import com.example.optifit.ui.SharedViewModel;
+import com.google.gson.Gson;
 
 import android.graphics.Color;
 import android.media.AudioFormat;
@@ -22,6 +23,7 @@ import android.content.pm.PackageManager;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -34,6 +36,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.Dictionary;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -51,11 +55,12 @@ import uk.me.hardill.volley.multipart.MultipartRequest;
 public class MainActivity extends AppCompatActivity {
     private SharedViewModel model;
     private Button recordBtn;
+    private TextView responseTxt;
 
     // Sound recording
     public static final int REQUEST_AUDIO_PERMISSION_CODE = 1;
     private MediaRecorder mRecorder;
-    private static String mFileName = Environment.getExternalStorageDirectory().getAbsolutePath() + "/recording.wav" ;
+    private static String mFileName = Environment.getExternalStorageDirectory().getAbsolutePath() + "/AudioRecording.mp4" ;
 
     private MediaPlayer fluentPlayer; // for example sound
     private boolean recordingStarted = false;
@@ -64,7 +69,6 @@ public class MainActivity extends AppCompatActivity {
     private RequestQueue requestQueue;
 
 
-    private Thread recordingThread = null;
 
     @SuppressLint({"RestrictedApi", "ClickableViewAccessibility"})
     @Override
@@ -83,6 +87,8 @@ public class MainActivity extends AppCompatActivity {
         recordBtn.setOnTouchListener(getButtonTouchListener());
         recordBtn.setOnClickListener(getButtonClickListener());
 
+        responseTxt =findViewById(R.id.responseTxt);
+
         Button listenBtn = findViewById(R.id.listenBtn);
         listenBtn.setOnClickListener(getListenButtonClickListener());
 
@@ -99,6 +105,11 @@ public class MainActivity extends AppCompatActivity {
     private void setRestRequestResponseListener() {
         try{
             String result = new FileUploader().execute().get();
+            Gson gson = new Gson();
+            Map<String, String> asMap = gson.fromJson(result, Map.class);
+            if(asMap.containsKey("status")){
+                responseTxt.setText(asMap.get("result"));
+            }
         }
         catch (Exception e){
 
@@ -143,11 +154,10 @@ public class MainActivity extends AppCompatActivity {
             //setbackgroundcolor method will change the background color of text view.
             //we are here initializing our filename variable with the path of the recorded audio file.
             mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
-            mFileName += "/AudioRecording.wav";
+            mFileName += "/AudioRecording.mp4";
             //below method is used to initialize the media recorder clss
             mRecorder = new MediaRecorder();
             //below method is used to set the audio source which we are using a mic.
-            mRecorder = new MediaRecorder();
             mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
             mRecorder.setOutputFormat(AudioFormat.ENCODING_PCM_16BIT);
             mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
@@ -199,7 +209,6 @@ public class MainActivity extends AppCompatActivity {
                 mRecorder.stop();
                 mRecorder.release();
                 mRecorder = null;
-                recordingThread = null;
             }
             recordingStarted = false;
         } catch (Exception e) {

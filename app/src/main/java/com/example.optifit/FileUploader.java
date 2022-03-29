@@ -11,7 +11,7 @@ import java.io.File;
 import java.io.FileInputStream;
 
 public class FileUploader extends AsyncTask<Void, Void, String> {
-    private static final String mFileName = Environment.getExternalStorageDirectory().getAbsolutePath() + "/recording.wav" ;
+    private static final String mFileName = Environment.getExternalStorageDirectory().getAbsolutePath() + "/AudioRecording.mp4" ;
 
     @Override
     protected String doInBackground(Void... params) {

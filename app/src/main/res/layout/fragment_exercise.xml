@@ -59,6 +59,7 @@
                 android:src="@drawable/ear"/>
 
         <TextView
+                android:id="@+id/responseTxt"
                 android:layout_margin="10dp"
                 android:layout_width="match_parent"
                 android:layout_height="95dp"
