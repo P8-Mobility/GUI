@@ -1,6 +1,6 @@
 package com.example.optifit;
 
-import com.example.optifit.ui.SharedViewModel;
+
 import com.google.gson.Gson;
 
 import android.graphics.Color;
@@ -14,7 +14,6 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.ViewModelProvider;
 import android.content.pm.PackageManager;
 import android.view.MotionEvent;
 import android.view.View;
@@ -31,7 +30,6 @@ import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.Manifest.permission.INTERNET;
 
 public class MainActivity extends AppCompatActivity {
-    private SharedViewModel model;
     private Button recordBtn;
     private TextView responseTxt;
 
@@ -52,9 +50,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.fragment_exercise);
 
         while (!CheckPermissions()) RequestPermissions();
-
-        model = new ViewModelProvider(this).get(SharedViewModel.class);
-        model.prepare(getApplicationContext());
 
         fluentPlayer = MediaPlayer.create(this, R.raw.paere);
 
@@ -92,7 +87,6 @@ public class MainActivity extends AppCompatActivity {
 
 
         private void setRestRequestResponseErrorListener() {
-        model.restRequestHandler.setResponseErrorListener(error -> Log.e("VOLLEY", error.toString()));
     }
 
     @Override
