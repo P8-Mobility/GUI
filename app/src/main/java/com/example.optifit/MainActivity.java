@@ -25,6 +25,9 @@ import androidx.core.content.ContextCompat;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.Manifest.permission.INTERNET;
@@ -172,19 +175,25 @@ public class MainActivity extends AppCompatActivity {
         if (null == mRecorder){
             return;
         }
-        try {
-            if (recordingStarted) {
-                mRecorder.stop();
-                mRecorder.release();
-                mRecorder = null;
+        Timer buttonTimer = new Timer();
+        buttonTimer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                try {
+                    if (recordingStarted) {
+                        mRecorder.stop();
+                        mRecorder.release();
+                        mRecorder = null;
+                    }
+                    recordingStarted = false;
+                } catch (Exception e) {
+                    Log.e("TAG", "prepare() failed");
+                }
+                playAudio();
+                setRestRequestResponseListener();
             }
-            recordingStarted = false;
-        } catch (Exception e) {
-            Log.e("TAG", "prepare() failed");
-        }
-        setRestRequestResponseListener();
+        }, 500);
     }
-
 
 
     private View.OnTouchListener getButtonTouchListener() {
@@ -204,7 +213,6 @@ public class MainActivity extends AppCompatActivity {
                     recordBtn.setBackgroundColor(getResources().getColor(R.color.light_blue_400));
                     MainActivity.this.recordBtn.setText(R.string.record_repetition);
                     stopRecording();
-                    playAudio();
                     break;
                 }
             }
