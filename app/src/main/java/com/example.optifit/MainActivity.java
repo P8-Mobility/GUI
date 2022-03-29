@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.fragment_exercise);
+        setContentView(R.layout.fragment_main);
 
         while (!CheckPermissions()) RequestPermissions();
 
@@ -188,14 +188,14 @@ public class MainActivity extends AppCompatActivity {
                 case MotionEvent.ACTION_DOWN: {
                     // Turn pressed button gray
                     MainActivity.this.recordBtn.setBackgroundColor(Color.GRAY);
-                    MainActivity.this.recordBtn.setText(R.string.press_down);
+                    MainActivity.this.recordBtn.setText(R.string.recording);
                     startRecording();
                     break;
                 }
                 case MotionEvent.ACTION_UP: {
                     // Reset button
                     recordBtn.setBackgroundColor(getResources().getColor(R.color.light_blue_400));
-                    MainActivity.this.recordBtn.setText(R.string.record_repetition);
+                    MainActivity.this.recordBtn.setText(R.string.record);
                     stopRecording();
                     playAudio();
                     break;

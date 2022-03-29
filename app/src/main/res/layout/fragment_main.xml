@@ -30,7 +30,7 @@
 
 
                     <TextView
-                            android:text="@string/pre_prediction_exercise_text"
+                            android:text="@string/word"
                             android:textSize="60sp"
                             android:layout_margin="20dp"
                             android:textColor="@color/black"
@@ -77,7 +77,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="92dp"
                 android:layout_margin="10dp"
-                android:text="@string/record_repetition"
+                android:text="@string/record"
                 tools:layout_editor_absoluteY="591dp"
                 tools:layout_editor_absoluteX="11dp" />
     </LinearLayout>

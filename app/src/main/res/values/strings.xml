@@ -1,13 +1,11 @@
 <resources>
     <string name="app_name">Cool App Name</string>
     <string name="title_init">Home</string>
-    <string name="title_exercise">Exercise</string>
-    <string name="title_ble">SensorTags</string>
     <string name="identifier">Participant identifier</string>
     <string name="delete">Delete</string>
-    <string name="record_repetition">Optag udtagelse</string>
-    <string name="press_down">Optager…</string>
-    <string name="pre_prediction_exercise_text">\"Pære\"</string>
+    <string name="record">Optag udtalelse</string>
+    <string name="recording">Optager…</string>
+    <string name="word">\"Pære\"</string>
     <string name="listen">Lyt</string>
     <string name="exercise_prediction_failed">Unable to predict exercise</string>
     <string name="optifit_home_screen_image">OptiFit home screen image</string>
