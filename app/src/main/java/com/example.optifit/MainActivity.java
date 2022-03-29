@@ -1,16 +1,12 @@
 package com.example.optifit;
 
-import com.android.volley.RequestQueue;
-import com.android.volley.toolbox.Volley;
 import com.example.optifit.ui.SharedViewModel;
 import com.google.gson.Gson;
 
 import android.graphics.Color;
 import android.media.AudioFormat;
-import android.media.AudioRecord;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
-import android.os.AsyncTask;
 import android.os.Environment;
 import android.util.Log;
 import android.annotation.SuppressLint;
@@ -28,29 +24,11 @@ import android.widget.Toast;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Dictionary;
 import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.Manifest.permission.INTERNET;
-
-
-import org.jsoup.Connection;
-import org.jsoup.Jsoup;
-
-import uk.me.hardill.volley.multipart.MultipartRequest;
 
 public class MainActivity extends AppCompatActivity {
     private SharedViewModel model;
@@ -64,9 +42,6 @@ public class MainActivity extends AppCompatActivity {
 
     private MediaPlayer fluentPlayer; // for example sound
     private boolean recordingStarted = false;
-
-    private byte[] recordedSound;
-    private RequestQueue requestQueue;
 
 
 
@@ -93,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
         listenBtn.setOnClickListener(getListenButtonClickListener());
 
         setRestRequestResponseErrorListener();
-        requestQueue = Volley.newRequestQueue(getApplicationContext());
     }
 
     private View.OnClickListener getButtonClickListener() {
@@ -205,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
         try {
-            if (true) {
+            if (recordingStarted) {
                 mRecorder.stop();
                 mRecorder.release();
                 mRecorder = null;
@@ -214,17 +188,9 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             Log.e("TAG", "prepare() failed");
         }
-        createByteArr();
         setRestRequestResponseListener();
     }
 
-    private void createByteArr() {
-        try {
-            recordedSound = Files.readAllBytes(Paths.get(mFileName));
-        } catch (Exception e) {
-            Log.e("ByteArr", "Failed to create byte array");
-        }
-    }
 
 
     private View.OnTouchListener getButtonTouchListener() {
