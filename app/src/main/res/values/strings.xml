@@ -1,12 +1,13 @@
 <resources>
     <string name="app_name">Cool App Name</string>
-    <string name="record">Optag udtalelse</string>
+    <string name="record">Optag udtale</string>
     <string name="recording">Optager…</string>
     <string name="word">\"Pære\"</string>
     <string name="listen">Lyt</string>
-    <string name="beforeRecordingText">Tryk på knappen for at få bedømt din udtalelse</string>
+    <string name="beforeRecordingText">Tryk på knappen for at få bedømt din udtale</string>
     <string name="duringRecordingText">Lytter!</string>
     <string name="afterPositiveRecordingText">Godt klaret!</string>
     <string name="afterNegativeRecordingText">Det var ikke helt rigtigt, prøv igen</string>
     <string name="exceptionDuringUpload">Something happened during the upload of the audio file, please try again</string>
+    <string name="gettingResource">Evaluerer lydklip…</string>
 </resources>

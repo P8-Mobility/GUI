@@ -19,7 +19,8 @@
             <TableRow
                 android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
-                android:gravity="center_horizontal">
+                android:gravity="center_horizontal"
+                android:paddingTop="80dp">
 
                 <TextView
                     android:id="@+id/exercise_prediction"
@@ -37,30 +38,34 @@
                     android:layout_height="wrap_content"
                     android:layout_column="2"
                     android:layout_margin="10dp"
+                    android:backgroundTint="@color/red_orange"
                     android:drawableEnd="@drawable/ic_baseline_volume_up"
                     android:gravity="center_vertical"
-                    android:text="@string/listen" />
-            </TableRow>
-            <TableRow
-                android:layout_width="fill_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_horizontal">
-                <ImageView
-                    android:layout_column="1"
-                    android:layout_width="match_parent"
-                    android:layout_height="95dp"
-                    android:src="@drawable/ear" />
+                    android:text="@string/listen"
+                    android:textColor="@color/white" />
             </TableRow>
         </TableLayout>
 
-        <TextView
-            android:id="@+id/responseTxt"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="220dp"
             android:layout_margin="10dp"
-            android:gravity="center_horizontal|center_vertical"
-            android:text="@string/beforeRecordingText"
-            android:textSize="28sp" />
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/responseTxt"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center_horizontal|center_vertical"
+                android:text="@string/beforeRecordingText"
+                android:textSize="28sp" />
+
+            <ImageView
+                android:id="@+id/earImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:src="@drawable/ear"
+                android:visibility="gone"/>
+        </LinearLayout>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -71,12 +76,15 @@
             <Button
                 android:id="@+id/recordbtn"
                 android:layout_width="match_parent"
-                android:layout_height="92dp"
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginBottom="5dp"
+                android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal|bottom"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginBottom="10dp"
+                android:padding="32dp"
+                android:background="@drawable/rounded_corner_button"
                 android:text="@string/record"
-                android:textAlignment="center"/>
+                android:textColor="@color/white"
+                android:textAlignment="center" />
         </LinearLayout>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

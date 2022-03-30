@@ -2,6 +2,7 @@ package com.example.optifit;
 
 import com.google.gson.Gson;
 
+import android.app.Activity;
 import android.graphics.Color;
 import android.media.AudioFormat;
 import android.media.MediaPlayer;
@@ -18,6 +19,7 @@ import android.content.pm.PackageManager;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -37,6 +39,7 @@ import static android.Manifest.permission.INTERNET;
 public class MainActivity extends AppCompatActivity {
     private Button recordBtn;
     private TextView responseTxt;
+    private ImageView earImage;
 
     // Sound recording
     public static final int REQUEST_AUDIO_PERMISSION_CODE = 1;
@@ -50,6 +53,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setTheme(R.style.Theme_CoolName);
         setContentView(R.layout.fragment_main);
 
         while (!CheckPermissions()) RequestPermissions();
@@ -59,8 +63,10 @@ public class MainActivity extends AppCompatActivity {
         recordBtn = findViewById(R.id.recordbtn);
         recordBtn.setOnTouchListener(getButtonTouchListener());
         recordBtn.setOnClickListener(getButtonClickListener());
+        recordBtn.setBackgroundColor(getResources().getColor(R.color.red_orange));
 
         responseTxt = findViewById(R.id.responseTxt);
+        earImage = findViewById(R.id.earImage);
 
         Button listenBtn = findViewById(R.id.listenBtn);
         listenBtn.setOnClickListener(getListenButtonClickListener());
@@ -80,10 +86,12 @@ public class MainActivity extends AppCompatActivity {
             Gson gson = new Gson();
             Map<String, String> asMap = gson.fromJson(result, Map.class);
             if (asMap.containsKey("status")) {
-                responseTxt.setText("Vi hørte dig sige: " + asMap.get("result"));
+                // We need to run setText on UI thread to avoid exception
+                this.runOnUiThread(() -> responseTxt.setText("Vi hørte dig sige: " + asMap.get("result")));
             }
         } catch (Exception e) {
-            responseTxt.setText(R.string.exceptionDuringUpload);
+            // We need to run setText on UI thread to avoid exception
+            this.runOnUiThread(() -> responseTxt.setText(R.string.exceptionDuringUpload));
         }
     }
 
@@ -139,6 +147,10 @@ public class MainActivity extends AppCompatActivity {
             mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
 
             mRecorder.setOutputFile(mFileName);
+
+            responseTxt.setVisibility(View.GONE);
+            earImage.setVisibility(View.VISIBLE);
+
             try {
                 mRecorder.prepare();
             } catch (IOException e) {
@@ -175,6 +187,10 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        earImage.setVisibility(View.GONE);
+        responseTxt.setText(R.string.gettingResource);
+        responseTxt.setVisibility(View.VISIBLE);
+
         // Add delay to release event to ensure that the end of the word is also recorded
         Timer buttonTimer = new Timer();
         buttonTimer.schedule(new TimerTask() {
@@ -191,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.e("TAG", "Exception thrown during release of recorder object");
                 } finally {
                     // Reset button
-                    recordBtn.setBackgroundColor(getResources().getColor(R.color.light_blue_400));
+                    recordBtn.setBackgroundColor(getResources().getColor(R.color.red_orange));
                     MainActivity.this.recordBtn.setText(R.string.record);
                 }
                 playAudio();
@@ -207,8 +223,8 @@ public class MainActivity extends AppCompatActivity {
             switch (action) {
                 case MotionEvent.ACTION_DOWN: {
                     // Turn pressed button gray
-                    MainActivity.this.recordBtn.setBackgroundColor(Color.GRAY);
-                    MainActivity.this.recordBtn.setText(R.string.recording);
+                    recordBtn.setBackgroundColor(getResources().getColor(R.color.red_orange_faded));
+                    recordBtn.setText(R.string.recording);
                     startRecording();
                     break;
                 }
