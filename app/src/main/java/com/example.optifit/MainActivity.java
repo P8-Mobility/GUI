@@ -189,13 +189,13 @@ public class MainActivity extends AppCompatActivity {
                     recordingStarted = false;
                 } catch (Exception e) {
                     Log.e("TAG", "Exception thrown during release of recorder object");
+                } finally {
+                    // Reset button
+                    recordBtn.setBackgroundColor(getResources().getColor(R.color.light_blue_400));
+                    MainActivity.this.recordBtn.setText(R.string.record);
                 }
                 playAudio();
                 uploadRecordingAndUpdateFeedbackOnResponse();
-
-                // Reset button
-                recordBtn.setBackgroundColor(getResources().getColor(R.color.light_blue_400));
-                MainActivity.this.recordBtn.setText(R.string.record);
             }
         }, 500);
     }
