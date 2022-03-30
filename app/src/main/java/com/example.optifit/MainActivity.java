@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private View.OnClickListener getButtonClickListener() {
-        //Used to ensure the app doesn't crash when the user clicks button instead of holding it down
+        // Used to ensure the app doesn't crash when the user clicks button instead of holding it down
         return null;
     }
 
