@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
-
 import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.Manifest.permission.INTERNET;
