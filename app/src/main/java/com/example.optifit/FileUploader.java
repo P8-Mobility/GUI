@@ -13,6 +13,11 @@ import java.io.FileInputStream;
 public class FileUploader extends AsyncTask<Void, Void, String> {
     private static final String mFileName = Environment.getExternalStorageDirectory().getAbsolutePath() + "/AudioRecording.mp4" ;
 
+    /**
+     * Uploads recorded audio to the API in the background to avoid halting the interface
+     *
+     * @return the result from passing the recorded audio through the model with the API
+     */
     @Override
     protected String doInBackground(Void... params) {
         String postUrl = "http://srv01.libdom.net:8080/predict";
