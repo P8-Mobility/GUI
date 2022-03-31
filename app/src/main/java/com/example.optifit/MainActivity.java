@@ -121,7 +121,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void RequestPermissions() {
-        ActivityCompat.requestPermissions(MainActivity.this, new String[]{RECORD_AUDIO, INTERNET, WRITE_EXTERNAL_STORAGE}, REQUEST_AUDIO_PERMISSION_CODE);
+        ActivityCompat.requestPermissions(MainActivity.this, 
+                                          new String[]{RECORD_AUDIO, INTERNET, WRITE_EXTERNAL_STORAGE}, 
+                                          REQUEST_AUDIO_PERMISSION_CODE);
     }
 
     private void startRecording() {
