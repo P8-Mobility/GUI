@@ -2,7 +2,6 @@ package com.example.optifit;
 
 import com.google.gson.Gson;
 
-import android.graphics.Color;
 import android.media.AudioFormat;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
@@ -18,6 +17,7 @@ import android.content.pm.PackageManager;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -35,7 +35,9 @@ import static android.Manifest.permission.INTERNET;
 
 public class MainActivity extends AppCompatActivity {
     private Button recordBtn;
+    private Button listenBtn;
     private TextView responseTxt;
+    private ImageView earImage;
 
     // Sound recording
     public static final int REQUEST_AUDIO_PERMISSION_CODE = 1;
@@ -58,11 +60,15 @@ public class MainActivity extends AppCompatActivity {
         recordBtn = findViewById(R.id.recordbtn);
         recordBtn.setOnTouchListener(getButtonTouchListener());
         recordBtn.setOnClickListener(getButtonClickListener());
+        recordBtn.setBackgroundResource(R.drawable.rounded_corners_primary);
+
+        listenBtn = findViewById(R.id.listenBtn);
+        listenBtn.setOnClickListener(getListenButtonClickListener());
+        listenBtn.setBackgroundResource(R.drawable.rounded_corners_primary);
 
         responseTxt = findViewById(R.id.responseTxt);
+        earImage = findViewById(R.id.earImage);
 
-        Button listenBtn = findViewById(R.id.listenBtn);
-        listenBtn.setOnClickListener(getListenButtonClickListener());
     }
 
     private View.OnClickListener getButtonClickListener() {
@@ -79,10 +85,12 @@ public class MainActivity extends AppCompatActivity {
             Gson gson = new Gson();
             Map<String, String> asMap = gson.fromJson(result, Map.class);
             if (asMap.containsKey("status")) {
-                responseTxt.setText("Vi hørte dig sige: " + asMap.get("result"));
+                // We need to run setText on UI thread to avoid exception
+                this.runOnUiThread(() -> responseTxt.setText("Vi hørte dig sige: " + asMap.get("result")));
             }
         } catch (Exception e) {
-            responseTxt.setText(R.string.exceptionDuringUpload);
+            // We need to run setText on UI thread to avoid exception
+            this.runOnUiThread(() -> responseTxt.setText(R.string.exceptionDuringUpload));
         }
     }
 
@@ -140,6 +148,10 @@ public class MainActivity extends AppCompatActivity {
             mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
 
             mRecorder.setOutputFile(mFileName);
+
+            responseTxt.setVisibility(View.GONE);
+            earImage.setVisibility(View.VISIBLE);
+
             try {
                 mRecorder.prepare();
             } catch (IOException e) {
@@ -176,6 +188,10 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        earImage.setVisibility(View.GONE);
+        responseTxt.setText(R.string.gettingResource);
+        responseTxt.setVisibility(View.VISIBLE);
+
         // Add delay to release event to ensure that the end of the word is also recorded
         Timer buttonTimer = new Timer();
         buttonTimer.schedule(new TimerTask() {
@@ -190,15 +206,18 @@ public class MainActivity extends AppCompatActivity {
                     recordingStarted = false;
                 } catch (Exception e) {
                     Log.e("TAG", "Exception thrown during release of recorder object");
+                } finally {
+                    setButtonStylingAndText(recordBtn, R.drawable.rounded_corners_primary, R.string.record);
                 }
                 playAudio();
                 uploadRecordingAndUpdateFeedbackOnResponse();
-
-                // Reset button
-                recordBtn.setBackgroundColor(getResources().getColor(R.color.light_blue_400));
-                MainActivity.this.recordBtn.setText(R.string.record);
             }
         }, 500);
+    }
+
+    private void setButtonStylingAndText(Button btn, int style, int textResource) {
+        btn.setBackgroundResource(style);
+        btn.setText(textResource);
     }
 
     private View.OnTouchListener getButtonTouchListener() {
@@ -207,9 +226,8 @@ public class MainActivity extends AppCompatActivity {
             int action = event.getAction();
             switch (action) {
                 case MotionEvent.ACTION_DOWN: {
-                    // Turn pressed button gray
-                    MainActivity.this.recordBtn.setBackgroundColor(Color.GRAY);
-                    MainActivity.this.recordBtn.setText(R.string.recording);
+                    // Fade button on press
+                    setButtonStylingAndText(recordBtn, R.drawable.rounded_corners_faded, R.string.recording);
                     startRecording();
                     break;
                 }
@@ -223,6 +241,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private View.OnClickListener getListenButtonClickListener() {
-        return v -> fluentPlayer.start();
+        return v -> {
+            fluentPlayer.start();
+            listenBtn.setBackgroundResource(R.drawable.rounded_corners_faded);
+            fluentPlayer.setOnCompletionListener(mediaPlayer -> listenBtn.setBackgroundResource(R.drawable.rounded_corners_primary));
+        };
     }
 }

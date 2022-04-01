@@ -15,4 +15,8 @@
     <color name="gray_400">#FFBDBDBD</color>
     <color name="gray_600">#FF757575</color>
     <color name="gray">#A39696</color>
+
+    <color name="red_orange">#FF3D19</color>
+    <color name="red_orange_darkened">#BF3B0F</color>
+    <color name="red_orange_faded">#F4835D</color>
 </resources>
