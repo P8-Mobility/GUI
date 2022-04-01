@@ -38,6 +38,7 @@ import static android.Manifest.permission.INTERNET;
 
 public class MainActivity extends AppCompatActivity {
     private Button recordBtn;
+    private Button listenBtn;
     private TextView responseTxt;
     private ImageView earImage;
 
@@ -62,12 +63,16 @@ public class MainActivity extends AppCompatActivity {
         recordBtn = findViewById(R.id.recordbtn);
         recordBtn.setOnTouchListener(getButtonTouchListener());
         recordBtn.setOnClickListener(getButtonClickListener());
-        recordBtn.setBackgroundColor(getResources().getColor(R.color.red_orange));
+
+        recordBtn.setBackgroundColor(getResources().getColor(R.color.red_orange, getTheme()));
+        MainActivity.this.recordBtn.setText(R.string.record);
+
+        listenBtn = findViewById(R.id.listenBtn);
+        listenBtn.setBackgroundColor(getResources().getColor(R.color.red_orange, getTheme()));
 
         responseTxt = findViewById(R.id.responseTxt);
         earImage = findViewById(R.id.earImage);
 
-        Button listenBtn = findViewById(R.id.listenBtn);
         listenBtn.setOnClickListener(getListenButtonClickListener());
     }
 
@@ -221,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
             int action = event.getAction();
             switch (action) {
                 case MotionEvent.ACTION_DOWN: {
-                    // Turn pressed button gray
+                    // Fade button on press
                     recordBtn.setBackgroundColor(getResources().getColor(R.color.red_orange_faded));
                     recordBtn.setText(R.string.recording);
                     startRecording();
@@ -237,6 +242,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private View.OnClickListener getListenButtonClickListener() {
-        return v -> fluentPlayer.start();
+        return v -> {
+            fluentPlayer.start();
+            listenBtn.setBackgroundColor(getResources().getColor(R.color.red_orange_faded));
+            fluentPlayer.setOnCompletionListener(mediaPlayer -> listenBtn.setBackgroundColor(getResources().getColor(R.color.red_orange)));
+        };
     }
 }

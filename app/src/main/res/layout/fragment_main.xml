@@ -37,10 +37,10 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_column="2"
-                    android:layout_margin="10dp"
-                    android:backgroundTint="@color/red_orange"
+                    android:layout_marginStart="10dp"
+                    android:paddingEnd="8dp"
                     android:drawableEnd="@drawable/ic_baseline_volume_up"
-                    android:gravity="center_vertical"
+                    android:gravity="center"
                     android:text="@string/listen"
                     android:textColor="@color/white" />
             </TableRow>
@@ -81,8 +81,8 @@
                 android:layout_marginHorizontal="20dp"
                 android:layout_marginBottom="10dp"
                 android:padding="32dp"
-                android:background="@drawable/rounded_corner_button"
                 android:text="@string/record"
+                android:textSize="18sp"
                 android:textColor="@color/white"
                 android:textAlignment="center" />
         </LinearLayout>
