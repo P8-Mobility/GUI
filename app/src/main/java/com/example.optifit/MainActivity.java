@@ -2,8 +2,6 @@ package com.example.optifit;
 
 import com.google.gson.Gson;
 
-import android.app.Activity;
-import android.graphics.Color;
 import android.media.AudioFormat;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
@@ -63,17 +61,15 @@ public class MainActivity extends AppCompatActivity {
         recordBtn = findViewById(R.id.recordbtn);
         recordBtn.setOnTouchListener(getButtonTouchListener());
         recordBtn.setOnClickListener(getButtonClickListener());
-
-        recordBtn.setBackgroundColor(getResources().getColor(R.color.red_orange, getTheme()));
-        MainActivity.this.recordBtn.setText(R.string.record);
+        recordBtn.setBackgroundResource(R.drawable.rounded_corners_primary);
 
         listenBtn = findViewById(R.id.listenBtn);
-        listenBtn.setBackgroundColor(getResources().getColor(R.color.red_orange, getTheme()));
+        listenBtn.setOnClickListener(getListenButtonClickListener());
+        listenBtn.setBackgroundResource(R.drawable.rounded_corners_primary);
 
         responseTxt = findViewById(R.id.responseTxt);
         earImage = findViewById(R.id.earImage);
 
-        listenBtn.setOnClickListener(getListenButtonClickListener());
     }
 
     private View.OnClickListener getButtonClickListener() {
@@ -210,14 +206,17 @@ public class MainActivity extends AppCompatActivity {
                 } catch (Exception e) {
                     Log.e("TAG", "Exception thrown during release of recorder object");
                 } finally {
-                    // Reset button
-                    recordBtn.setBackgroundColor(getResources().getColor(R.color.red_orange));
-                    MainActivity.this.recordBtn.setText(R.string.record);
+                    setButtonStylingAndText(recordBtn, R.drawable.rounded_corners_primary, R.string.record);
                 }
                 playAudio();
                 uploadRecordingAndUpdateFeedbackOnResponse();
             }
         }, 500);
+    }
+
+    private void setButtonStylingAndText(Button btn, int style, int textResource) {
+        btn.setBackgroundResource(style);
+        btn.setText(textResource);
     }
 
     private View.OnTouchListener getButtonTouchListener() {
@@ -227,8 +226,7 @@ public class MainActivity extends AppCompatActivity {
             switch (action) {
                 case MotionEvent.ACTION_DOWN: {
                     // Fade button on press
-                    recordBtn.setBackgroundColor(getResources().getColor(R.color.red_orange_faded));
-                    recordBtn.setText(R.string.recording);
+                    setButtonStylingAndText(recordBtn, R.drawable.rounded_corners_faded, R.string.recording);
                     startRecording();
                     break;
                 }
@@ -244,8 +242,8 @@ public class MainActivity extends AppCompatActivity {
     private View.OnClickListener getListenButtonClickListener() {
         return v -> {
             fluentPlayer.start();
-            listenBtn.setBackgroundColor(getResources().getColor(R.color.red_orange_faded));
-            fluentPlayer.setOnCompletionListener(mediaPlayer -> listenBtn.setBackgroundColor(getResources().getColor(R.color.red_orange)));
+            listenBtn.setBackgroundResource(R.drawable.rounded_corners_faded);
+            fluentPlayer.setOnCompletionListener(mediaPlayer -> listenBtn.setBackgroundResource(R.drawable.rounded_corners_primary));
         };
     }
 }
