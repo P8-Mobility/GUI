@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="pære">
+        <item name="spelling">pære</item>
+        <item name="phonemes">pʰ æː ɐ</item>
+    </string-array>
+    <string-array name="bære">
+        <item name="spelling">bære</item>
+        <item name="phonemes">p æː ɐ</item>
+    </string-array>
+    <array name="word_list">
+        <item>@array/pære</item>
+        <item>@array/bære</item>
+    </array>
+</resources>

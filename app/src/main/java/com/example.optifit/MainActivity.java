@@ -2,6 +2,9 @@ package com.example.optifit;
 
 import com.google.gson.Gson;
 
+import android.content.res.Resources;
+import android.content.res.TypedArray;
+import android.content.res.XmlResourceParser;
 import android.media.AudioFormat;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
@@ -41,7 +44,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -89,29 +95,21 @@ public class MainActivity extends AppCompatActivity {
         parseWordList();
     }
 
-    private void parseWordList(){
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        try {
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            InputStream inStream = this.getAssets().open("src/main/res/word_list.xml");
+    private void parseWordList() {
+        Resources res = getResources();
+        TypedArray wordArray = res.obtainTypedArray(R.array.word_list);
+        int n = wordArray.length();
 
-            Document doc = db.parse((inStream));
-            NodeList words = doc.getElementsByTagName("word");
-
-            for (int i = 0; i < words.getLength(); i++) {
-                Node node = words.item(i);
-                if (node.getNodeType() == Node.ELEMENT_NODE) {
-                    Element element = (Element) node;
-
-                    String spelling = element.getElementsByTagName("spelling").item(0).getTextContent();
-                    String phonemes = element.getElementsByTagName("phonemes").item(0).getTextContent();
-                    wordList.put(spelling, phonemes);
-                }
+        for (int i = 0; i < n; ++i) {
+            int id = wordArray.getResourceId(i, 0);
+            if (id > 0) {
+                wordList.put(res.getStringArray(id)[0], res.getStringArray(id)[1]);
+            } else {
+                // ToDo: Handle something wrong with the XML
             }
-
-        } catch (ParserConfigurationException | IOException | SAXException e) {
-            e.printStackTrace();
         }
+
+        wordArray.recycle(); // Important!
     }
 
     private View.OnClickListener getButtonClickListener() {
@@ -140,14 +138,13 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Shows feedback to the user depending on the predicted phonemes
      */
-    private void showFeedback(String result){
+    private void showFeedback(String result) {
         boolean specialCasePresent = specialFeedback(result);
         if (!(specialCasePresent)) {
             if (result.equals(wordList.get(currentWord))) { // Gets the phonemes
-                this.runOnUiThread(() -> responseTxt.setText(getResources().getString(R.string.correctPronunciation, currentWord) + result));
-            }
-            else {
-                this.runOnUiThread(() -> responseTxt.setText(getResources().getString(R.string.incorrectPronunciation, currentWord) + result));
+                this.runOnUiThread(() -> responseTxt.setText(getResources().getString(R.string.correctPronunciation, currentWord)));
+            } else {
+                this.runOnUiThread(() -> responseTxt.setText(getResources().getString(R.string.incorrectPronunciation, currentWord)));
             }
         }
     }
@@ -155,14 +152,14 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Calls special feedback case if relevant
      */
-    private boolean specialFeedback(String result){
+    private boolean specialFeedback(String result) {
         String[] phonemes = result.split(" ");
-        if (currentWord.equals("pære")){
-            if (phonemes[0].equals("p")){
+        if (currentWord.equals("pære")) {
+            if (phonemes[0].equals("p")) {
                 this.runOnUiThread(() -> responseTxt.setText(R.string.incorrectPronunciationPtoB));
                 return true;
             }
-            if (!(phonemes[0].equals("pʰ"))){
+            if (!(phonemes[0].equals("pʰ"))) {
                 this.runOnUiThread(() -> responseTxt.setText(R.string.incorrectPronunciationP));
                 return true;
             }
@@ -205,9 +202,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void RequestPermissions() {
-        ActivityCompat.requestPermissions(MainActivity.this, 
-                                          new String[]{RECORD_AUDIO, INTERNET, WRITE_EXTERNAL_STORAGE}, 
-                                          REQUEST_AUDIO_PERMISSION_CODE);
+        ActivityCompat.requestPermissions(MainActivity.this,
+                new String[]{RECORD_AUDIO, INTERNET, WRITE_EXTERNAL_STORAGE},
+                REQUEST_AUDIO_PERMISSION_CODE);
     }
 
     private void startRecording() {
