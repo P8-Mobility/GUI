@@ -24,7 +24,10 @@ import android.widget.Toast;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Hashtable;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -32,6 +35,16 @@ import java.util.TimerTask;
 import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.Manifest.permission.INTERNET;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 public class MainActivity extends AppCompatActivity {
     private Button recordBtn;
@@ -46,6 +59,9 @@ public class MainActivity extends AppCompatActivity {
 
     private MediaPlayer fluentPlayer; // For example sound
     private boolean recordingStarted = false;
+
+    Map<String, String> wordList = new Hashtable<>();
+    String currentWord = "pære";
 
     @SuppressLint({"RestrictedApi", "ClickableViewAccessibility"})
     @Override
@@ -69,6 +85,33 @@ public class MainActivity extends AppCompatActivity {
         responseTxt = findViewById(R.id.responseTxt);
         earImage = findViewById(R.id.earImage);
 
+        parseWordList();
+    }
+
+    private void parseWordList(){
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        try {
+
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            InputStream inStream = this.getAssets().open("src/main/res/word_list.xml");
+
+            Document doc = db.parse((inStream));
+            NodeList words = doc.getElementsByTagName("word");
+
+            for (int i = 0; i < words.getLength(); i++) {
+                Node node = words.item(i);
+                if (node.getNodeType() == Node.ELEMENT_NODE) {
+                    Element element = (Element) node;
+
+                    String spelling = element.getElementsByTagName("spelling").item(0).getTextContent();
+                    String phonemes = element.getElementsByTagName("phonemes").item(0).getTextContent();
+                    wordList.put(spelling, phonemes);
+                }
+            }
+
+        } catch (ParserConfigurationException | IOException | SAXException e) {
+            e.printStackTrace();
+        }
     }
 
     private View.OnClickListener getButtonClickListener() {
@@ -86,12 +129,45 @@ public class MainActivity extends AppCompatActivity {
             Map<String, String> asMap = gson.fromJson(result, Map.class);
             if (asMap.containsKey("status")) {
                 // We need to run setText on UI thread to avoid exception
-                this.runOnUiThread(() -> responseTxt.setText("Vi hørte dig sige: " + asMap.get("result")));
+                showFeedback(asMap.get("result"));
             }
         } catch (Exception e) {
             // We need to run setText on UI thread to avoid exception
             this.runOnUiThread(() -> responseTxt.setText(R.string.exceptionDuringUpload));
         }
+    }
+
+    /**
+     * Shows feedback to the user depending on the predicted phonemes
+     */
+    private void showFeedback(String result){
+        boolean specialCasePresent = specialFeedback(result);
+        if (!(specialCasePresent)) {
+            if (result.equals(wordList.get(currentWord))) { // Gets the phonemes
+                this.runOnUiThread(() -> responseTxt.setText(getResources().getString(R.string.correctPronunciation, currentWord) + result));
+            }
+            else {
+                this.runOnUiThread(() -> responseTxt.setText(getResources().getString(R.string.incorrectPronunciation, currentWord) + result));
+            }
+        }
+    }
+
+    /**
+     * Calls special feedback case if relevant
+     */
+    private boolean specialFeedback(String result){
+        String[] phonemes = result.split(" ");
+        if (currentWord.equals("pære")){
+            if (phonemes[0].equals("p")){
+                this.runOnUiThread(() -> responseTxt.setText(R.string.incorrectPronunciationPtoB));
+                return true;
+            }
+            if (!(phonemes[0].equals("pʰ"))){
+                this.runOnUiThread(() -> responseTxt.setText(R.string.incorrectPronunciationP));
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
