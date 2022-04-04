@@ -16,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.pm.PackageManager;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -91,7 +92,6 @@ public class MainActivity extends AppCompatActivity {
     private void parseWordList(){
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         try {
-
             DocumentBuilder db = dbf.newDocumentBuilder();
             InputStream inStream = this.getAssets().open("src/main/res/word_list.xml");
 
@@ -227,6 +227,7 @@ public class MainActivity extends AppCompatActivity {
 
             responseTxt.setVisibility(View.GONE);
             earImage.setVisibility(View.VISIBLE);
+            earImage.setAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.pulse));
 
             try {
                 mRecorder.prepare();
@@ -264,6 +265,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        earImage.clearAnimation();
         earImage.setVisibility(View.GONE);
         responseTxt.setText(R.string.gettingResource);
         responseTxt.setVisibility(View.VISIBLE);
