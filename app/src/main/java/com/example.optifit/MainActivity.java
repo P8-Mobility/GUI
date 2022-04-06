@@ -249,7 +249,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Plays the audio recorded by the user
      */
-    public void playAudio() {
+/*    public void playAudio() {
         MediaPlayer mPlayer = new MediaPlayer();
         try {
             // Prepare player to play recording and play it
@@ -260,7 +260,7 @@ public class MainActivity extends AppCompatActivity {
             Log.e("TAG", "prepare() failed");
         }
     }
-
+*/
     /**
      * Stop the recording and upload it to the API
      */
@@ -291,7 +291,6 @@ public class MainActivity extends AppCompatActivity {
                 } finally {
                     setButtonStylingAndText(recordBtn, R.drawable.rounded_corners_primary, R.string.record);
                 }
-                playAudio();
                 uploadRecordingAndUpdateFeedbackOnResponse();
             }
         }, 500);
