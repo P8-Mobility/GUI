@@ -86,7 +86,8 @@ public class MainActivity extends AppCompatActivity {
         currentWord = wordList.keySet().stream()
                 .filter((w) -> w.equals("Pære")) // Ensures that "Pære" is displayed, should be removed in final product
                 .findFirst().orElse("Ord mangler");
-        wordTxt.setText(currentWord.contains(" ") ? currentWord : '"' + currentWord + '"');
+        // If the word was not found, "Ord mangler" will be displayed without quotes
+        wordTxt.setText(currentWord.equals("Ord mangler") ? currentWord : '"' + currentWord + '"');
         wordTxt.setPaintFlags(Paint.UNDERLINE_TEXT_FLAG);
 
         recordBtn = findViewById(R.id.recordbtn);
