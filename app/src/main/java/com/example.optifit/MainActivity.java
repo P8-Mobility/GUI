@@ -110,6 +110,7 @@ public class MainActivity extends AppCompatActivity {
         for (int i = 0; i < n; ++i) {
             int id = wordArray.getResourceId(i, 0);
             if (id > 0) {
+                System.out.println(res);
                 wordList.put(res.getStringArray(id)[0], res.getStringArray(id)[1]);
             } else {
                 // ToDo: Handle something wrong with the XML
