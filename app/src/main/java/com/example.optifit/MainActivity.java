@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 
 import android.content.res.Resources;
 import android.content.res.TypedArray;
-import android.content.res.XmlResourceParser;
+import android.graphics.Paint;
 import android.media.AudioFormat;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
@@ -28,11 +28,10 @@ import android.widget.Toast;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Hashtable;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -54,10 +53,11 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 public class MainActivity extends AppCompatActivity {
-    private Button recordBtn;
+    private TextView wordTxt;
     private Button listenBtn;
     private TextView responseTxt;
     private ImageView earImage;
+    private Button recordBtn;
 
     // Sound recording
     public static final int REQUEST_AUDIO_PERMISSION_CODE = 1;
@@ -68,7 +68,7 @@ public class MainActivity extends AppCompatActivity {
     private boolean recordingStarted = false;
 
     Map<String, String> wordList = new Hashtable<>();
-    String currentWord = "pære";
+    String currentWord;
 
     @SuppressLint({"RestrictedApi", "ClickableViewAccessibility"})
     @Override
@@ -79,6 +79,15 @@ public class MainActivity extends AppCompatActivity {
         while (!CheckPermissions()) RequestPermissions();
 
         fluentPlayer = MediaPlayer.create(this, R.raw.paere);
+
+        wordTxt = findViewById(R.id.wordTxt);
+
+        parseWordList();
+        currentWord = wordList.keySet().stream()
+                .filter((w) -> w.equals("Pære")) // Ensures that "Pære" is displayed, should be removed in final product
+                .findFirst().orElse("No word");
+        wordTxt.setText(currentWord.contains(" ") ? currentWord : '"' + currentWord + '"');
+        wordTxt.setPaintFlags(Paint.UNDERLINE_TEXT_FLAG);
 
         recordBtn = findViewById(R.id.recordbtn);
         recordBtn.setOnTouchListener(getButtonTouchListener());
@@ -91,8 +100,6 @@ public class MainActivity extends AppCompatActivity {
 
         responseTxt = findViewById(R.id.responseTxt);
         earImage = findViewById(R.id.earImage);
-
-        parseWordList();
     }
 
     private void parseWordList() {
@@ -125,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
             String result = new FileUploader().execute().get();
             Gson gson = new Gson();
             Map<String, String> asMap = gson.fromJson(result, Map.class);
-            if (asMap.containsKey("status")) {
+            if (asMap.containsKey("status") && Objects.equals(asMap.get("status"), "OK")) {
                 // We need to run setText on UI thread to avoid exception
                 showFeedback(asMap.get("result"));
             }

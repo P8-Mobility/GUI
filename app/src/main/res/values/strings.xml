@@ -2,7 +2,6 @@
     <string name="app_name">Cool App Name</string>
     <string name="record">Optag udtale</string>
     <string name="recording">Optager…</string>
-    <string name="word">\"Pære\"</string>
     <string name="listen">Lyt</string>
     <string name="beforeRecordingText">Hold knappen nede for at få bedømt din udtale</string>
     <string name="duringRecordingText">Lytter!</string>

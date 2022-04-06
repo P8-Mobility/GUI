@@ -28,9 +28,8 @@
                     android:layout_column="1"
                     android:layout_margin="20dp"
                     android:gravity="center_horizontal"
-                    android:text="@string/word"
                     android:textColor="@color/black"
-                    android:textSize="60sp" />
+                    android:textSize="60sp"  />
 
                 <Button
                     android:id="@+id/listenBtn"
