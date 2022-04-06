@@ -3,15 +3,15 @@
     <string name="record">Optag udtale</string>
     <string name="recording">Optager…</string>
     <string name="listen">Lyt</string>
-    <string name="beforeRecordingText">Hold knappen nede for at få bedømt din udtale</string>
+    <string name="beforeRecordingText">Hold knappen nede for at få bedømt din udtale!</string>
     <string name="duringRecordingText">Lytter!</string>
     <string name="afterPositiveRecordingText">Godt klaret!</string>
-    <string name="afterNegativeRecordingText">Det var ikke helt rigtigt, prøv igen</string>
-    <string name="exceptionDuringUpload">Something happened during the upload of the audio file, please try again</string>
+    <string name="afterNegativeRecordingText">Det var ikke helt rigtigt, prøv igen.</string>
+    <string name="exceptionDuringUpload">Something happened during the upload of the audio file, please try again.</string>
     <string name="gettingResource">Evaluerer lydklip…</string>
     <!--Feedback-->
     <string name="correctPronunciation">Du udtalte “%s” flydende. Godt klaret :)</string>
     <string name="incorrectPronunciation">Du udtalte ikke “%s” helt flydende. Prøv igen!</string>
-    <string name="incorrectPronunciationPtoB">Du udtalte ikke “pære” helt flydende. “p” blev udtalt som “b”</string>
-    <string name="incorrectPronunciationP">Du udtalte ikke “pære” helt flydende. “P” blev ikke udtalt flydende</string>
+    <string name="incorrectPronunciationPtoB">Du udtalte ikke “pære” helt flydende. “p” blev udtalt som “b”.</string>
+    <string name="incorrectPronunciationP">Du udtalte ikke “pære” helt flydende. “P” blev ikke udtalt flydende.</string>
 </resources>

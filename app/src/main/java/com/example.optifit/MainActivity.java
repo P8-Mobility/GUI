@@ -85,7 +85,7 @@ public class MainActivity extends AppCompatActivity {
         parseWordList();
         currentWord = wordList.keySet().stream()
                 .filter((w) -> w.equals("Pære")) // Ensures that "Pære" is displayed, should be removed in final product
-                .findFirst().orElse("No word");
+                .findFirst().orElse("Ord mangler");
         wordTxt.setText(currentWord.contains(" ") ? currentWord : '"' + currentWord + '"');
         wordTxt.setPaintFlags(Paint.UNDERLINE_TEXT_FLAG);
 
@@ -147,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private void showFeedback(String result) {
         boolean specialCasePresent = specialFeedback(result);
-        if (!(specialCasePresent)) {
+        if (!specialCasePresent) {
             if (result.equals(wordList.get(currentWord))) { // Gets the phonemes
                 this.runOnUiThread(() -> responseTxt.setText(getResources().getString(R.string.correctPronunciation, currentWord)));
             } else {
@@ -166,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
                 this.runOnUiThread(() -> responseTxt.setText(R.string.incorrectPronunciationPtoB));
                 return true;
             }
-            if (!(phonemes[0].equals("pʰ"))) {
+            if (!phonemes[0].equals("pʰ")) {
                 this.runOnUiThread(() -> responseTxt.setText(R.string.incorrectPronunciationP));
                 return true;
             }
@@ -261,6 +261,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 */
+
     /**
      * Stop the recording and upload it to the API
      */
