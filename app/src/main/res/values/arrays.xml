@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- List of supported word -->
     <string-array name="pære">
         <item name="spelling">Pære</item>
         <item name="phonemes">pʰ æː ɐ</item>
@@ -11,5 +12,15 @@
     <array name="word_list">
         <item>@array/pære</item>
         <item>@array/bære</item>
+    </array>
+
+    <!-- List of special cases for feedback -->
+    <string-array name="p">
+        <item name="expected">pʰ</item>
+        <item name="actual">p</item>
+        <item name="feedback">\"p\" blev udtalt som \"b\"</item>
+    </string-array>
+    <array name="special_feedback_cases">
+        <item>@array/p</item>
     </array>
 </resources>
