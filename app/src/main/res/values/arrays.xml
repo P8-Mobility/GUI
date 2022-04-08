@@ -18,6 +18,7 @@
     <string-array name="p">
         <item name="expected">pʰ</item>
         <item name="actual">p</item>
+        <item name="feedback">\"p\" blev udtalt som \"b\"</item>
     </string-array>
     <array name="special_feedback_cases">
         <item>@array/p</item>

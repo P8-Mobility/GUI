@@ -29,7 +29,7 @@
                     android:layout_margin="20dp"
                     android:gravity="center_horizontal"
                     android:textColor="@color/black"
-                    android:textSize="60sp"  />
+                    android:textSize="60sp" />
 
                 <Button
                     android:id="@+id/listenBtn"

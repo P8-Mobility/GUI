@@ -17,6 +17,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.pm.PackageManager;
+import android.util.Pair;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.AnimationUtils;
@@ -29,7 +30,10 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Timer;
@@ -39,18 +43,7 @@ import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.Manifest.permission.INTERNET;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
-import org.xmlpull.v1.XmlPullParser;
-import org.xmlpull.v1.XmlPullParserException;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
+import kotlin.Triple;
 
 public class MainActivity extends AppCompatActivity {
     private TextView wordTxt;
@@ -62,33 +55,46 @@ public class MainActivity extends AppCompatActivity {
     // Sound recording
     public static final int REQUEST_AUDIO_PERMISSION_CODE = 1;
     private MediaRecorder mRecorder;
-    private static String mFileName = Environment.getExternalStorageDirectory().getAbsolutePath() + "/AudioRecording.mp4";
+    private static final String mFileName = Environment.getExternalStorageDirectory().getAbsolutePath() + "/AudioRecording.mp4";
 
     private MediaPlayer fluentPlayer; // For example sound
     private boolean recordingStarted = false;
 
-    Map<String, String> wordList = new Hashtable<>();
-    String currentWord;
+    private ResourceLoader resourceLoader;
+    ArrayList<Pair<String, String>> wordList = new ArrayList<>();
+    ArrayList<Triple<String, String, String>> specialFeedbackCases = new ArrayList<>();
+    Pair<String, String> currentWord;
 
-    @SuppressLint({"RestrictedApi", "ClickableViewAccessibility"})
+    @SuppressLint({"RestrictedApi"})
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_main);
+        resourceLoader = new ResourceLoader(getResources());
 
         while (!CheckPermissions()) RequestPermissions();
 
         fluentPlayer = MediaPlayer.create(this, R.raw.paere);
 
+        responseTxt = findViewById(R.id.responseTxt);
+        earImage = findViewById(R.id.earImage);
+
+        initializeWord();
+        initializeButtons();
+    }
+
+    private void initializeWord() {
         wordTxt = findViewById(R.id.wordTxt);
+        wordList = resourceLoader.parseWordList();
+        specialFeedbackCases = resourceLoader.parseSpecialCasesList();
+        currentWord = wordList.stream()
+                .filter((w) -> w.first.equals("Pære")) // Ensures that "Pære" is displayed, should be removed in final product
+                .findFirst().orElse(null);
+        wordTxt.setText(currentWord == null ? "Ord mangler" : '"' + currentWord.first + '"');
+    }
 
-        parseWordList();
-        currentWord = wordList.keySet().stream()
-                .filter((w) -> w.equals("Pære")) // Ensures that "Pære" is displayed, should be removed in final product
-                .findFirst().orElse("Ord mangler");
-        wordTxt.setText(currentWord.contains(" ") ? currentWord : '"' + currentWord + '"');
-        wordTxt.setPaintFlags(Paint.UNDERLINE_TEXT_FLAG);
-
+    @SuppressLint("ClickableViewAccessibility")
+    private void initializeButtons() {
         recordBtn = findViewById(R.id.recordbtn);
         recordBtn.setOnTouchListener(getButtonTouchListener());
         recordBtn.setOnClickListener(getButtonClickListener());
@@ -97,32 +103,6 @@ public class MainActivity extends AppCompatActivity {
         listenBtn = findViewById(R.id.listenBtn);
         listenBtn.setOnClickListener(getListenButtonClickListener());
         listenBtn.setBackgroundResource(R.drawable.rounded_corners_primary);
-
-        responseTxt = findViewById(R.id.responseTxt);
-        earImage = findViewById(R.id.earImage);
-    }
-
-    private void parseWordList() {
-        Resources res = getResources();
-        TypedArray wordArray = res.obtainTypedArray(R.array.word_list);
-        int n = wordArray.length();
-
-        for (int i = 0; i < n; ++i) {
-            int id = wordArray.getResourceId(i, 0);
-            if (id > 0) {
-                System.out.println(res);
-                wordList.put(res.getStringArray(id)[0], res.getStringArray(id)[1]);
-            } else {
-                // ToDo: Handle something wrong with the XML
-            }
-        }
-
-        wordArray.recycle(); // Important!
-    }
-
-    private View.OnClickListener getButtonClickListener() {
-        // Used to ensure the app doesn't crash when the user clicks button instead of holding it down
-        return null;
     }
 
     /**
@@ -149,26 +129,25 @@ public class MainActivity extends AppCompatActivity {
     private void showFeedback(String result) {
         boolean specialCasePresent = specialFeedback(result);
         if (!specialCasePresent) {
-            if (result.equals(wordList.get(currentWord))) { // Gets the phonemes
-                this.runOnUiThread(() -> responseTxt.setText(getResources().getString(R.string.correctPronunciation, currentWord)));
+            if (currentWord.second.equals(result)) {
+                this.runOnUiThread(() -> responseTxt.setText(getString(R.string.correctPronunciation, currentWord.first.toLowerCase())));
             } else {
-                this.runOnUiThread(() -> responseTxt.setText(getResources().getString(R.string.incorrectPronunciation, currentWord)));
+                this.runOnUiThread(() -> responseTxt.setText(getString(R.string.incorrectPronunciation, currentWord.first.toLowerCase())));
             }
         }
     }
 
     /**
-     * Calls special feedback case if relevant
+     * Calls special feedback case any case applies to the current word and the pronunciation result
      */
     private boolean specialFeedback(String result) {
-        String[] phonemes = result.split(" ");
-        if (currentWord.equals("pære")) {
-            if (phonemes[0].equals("p")) {
-                this.runOnUiThread(() -> responseTxt.setText(R.string.incorrectPronunciationPtoB));
-                return true;
-            }
-            if (!phonemes[0].equals("pʰ")) {
-                this.runOnUiThread(() -> responseTxt.setText(R.string.incorrectPronunciationP));
+        for (Triple<String, String, String> specialCase : specialFeedbackCases) {
+            String[] wordPhonemes = currentWord.second.split(" ");
+            String[] resultPhonemes = result.split(" ");
+            if (Arrays.stream(wordPhonemes).anyMatch((s) -> s.equals(specialCase.getFirst()))
+                    && Arrays.stream(resultPhonemes).anyMatch((s) -> s.equals(specialCase.getSecond()))
+                    && currentWord.second.indexOf(specialCase.getFirst()) == result.indexOf(specialCase.getSecond())) {
+                this.runOnUiThread(() -> responseTxt.setText(getString(R.string.incorrectPronunciationSpecialCase, specialCase.getThird())));
                 return true;
             }
         }
@@ -217,18 +196,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void startRecording() {
         if (CheckPermissions()) {
-            // Initialization of filename to the path of the recorded audio file
-            mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
-            mFileName += "/AudioRecording.mp4";
-
-            mRecorder = new MediaRecorder();
-
-            // Set-up of the recorder to ensure correct format
-            mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
-            mRecorder.setOutputFormat(AudioFormat.ENCODING_PCM_16BIT);
-            mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
-
-            mRecorder.setOutputFile(mFileName);
+            prepareRecorder();
 
             responseTxt.setVisibility(View.GONE);
             earImage.setVisibility(View.VISIBLE);
@@ -247,8 +215,20 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void prepareRecorder() {
+        mRecorder = new MediaRecorder();
+
+        // Set-up of the recorder to ensure correct format
+        mRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        mRecorder.setOutputFormat(AudioFormat.ENCODING_PCM_16BIT);
+        mRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC);
+
+        mRecorder.setOutputFile(mFileName);
+    }
+
     /**
-     * Plays the audio recorded by the user
+     * Plays the audio recorded by the user.
+     * ToDo: Currently commented out, as it might be ideal for the user to listen to their own pronunciation.
      */
 /*    public void playAudio() {
         MediaPlayer mPlayer = new MediaPlayer();
@@ -329,5 +309,11 @@ public class MainActivity extends AppCompatActivity {
             listenBtn.setBackgroundResource(R.drawable.rounded_corners_faded);
             fluentPlayer.setOnCompletionListener(mediaPlayer -> listenBtn.setBackgroundResource(R.drawable.rounded_corners_primary));
         };
+    }
+
+
+    private View.OnClickListener getButtonClickListener() {
+        // Used to ensure the app doesn't crash when the user clicks button instead of holding it down
+        return null;
     }
 }
