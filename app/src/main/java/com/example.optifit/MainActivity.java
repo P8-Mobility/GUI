@@ -2,6 +2,9 @@ package com.example.optifit;
 
 import com.google.gson.Gson;
 
+import android.content.res.Resources;
+import android.content.res.TypedArray;
+import android.graphics.Paint;
 import android.media.AudioFormat;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
@@ -16,6 +19,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.pm.PackageManager;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -25,7 +29,9 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import java.io.IOException;
+import java.util.Hashtable;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -33,11 +39,25 @@ import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.Manifest.permission.INTERNET;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xmlpull.v1.XmlPullParser;
+import org.xmlpull.v1.XmlPullParserException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 public class MainActivity extends AppCompatActivity {
-    private Button recordBtn;
+    private TextView wordTxt;
     private Button listenBtn;
     private TextView responseTxt;
     private ImageView earImage;
+    private Button recordBtn;
 
     // Sound recording
     public static final int REQUEST_AUDIO_PERMISSION_CODE = 1;
@@ -46,6 +66,9 @@ public class MainActivity extends AppCompatActivity {
 
     private MediaPlayer fluentPlayer; // For example sound
     private boolean recordingStarted = false;
+
+    Map<String, String> wordList = new Hashtable<>();
+    String currentWord;
 
     @SuppressLint({"RestrictedApi", "ClickableViewAccessibility"})
     @Override
@@ -56,6 +79,16 @@ public class MainActivity extends AppCompatActivity {
         while (!CheckPermissions()) RequestPermissions();
 
         fluentPlayer = MediaPlayer.create(this, R.raw.paere);
+
+        wordTxt = findViewById(R.id.wordTxt);
+
+        parseWordList();
+        currentWord = wordList.keySet().stream()
+                .filter((w) -> w.equals("Pære")) // Ensures that "Pære" is displayed, should be removed in final product
+                .findFirst().orElse("Ord mangler");
+        // If the word was not found, "Ord mangler" will be displayed without quotes
+        wordTxt.setText(currentWord.equals("Ord mangler") ? currentWord : '"' + currentWord + '"');
+        wordTxt.setPaintFlags(Paint.UNDERLINE_TEXT_FLAG);
 
         recordBtn = findViewById(R.id.recordbtn);
         recordBtn.setOnTouchListener(getButtonTouchListener());
@@ -68,7 +101,23 @@ public class MainActivity extends AppCompatActivity {
 
         responseTxt = findViewById(R.id.responseTxt);
         earImage = findViewById(R.id.earImage);
+    }
 
+    private void parseWordList() {
+        Resources res = getResources();
+        TypedArray wordArray = res.obtainTypedArray(R.array.word_list);
+        int n = wordArray.length();
+
+        for (int i = 0; i < n; ++i) {
+            int id = wordArray.getResourceId(i, 0);
+            if (id > 0) {
+                wordList.put(res.getStringArray(id)[0], res.getStringArray(id)[1]);
+            } else {
+                // ToDo: Handle something wrong with the XML
+            }
+        }
+
+        wordArray.recycle(); // Important!
     }
 
     private View.OnClickListener getButtonClickListener() {
@@ -84,14 +133,46 @@ public class MainActivity extends AppCompatActivity {
             String result = new FileUploader().execute().get();
             Gson gson = new Gson();
             Map<String, String> asMap = gson.fromJson(result, Map.class);
-            if (asMap.containsKey("status")) {
+            if (asMap.containsKey("status") && Objects.equals(asMap.get("status"), "OK")) {
                 // We need to run setText on UI thread to avoid exception
-                this.runOnUiThread(() -> responseTxt.setText("Vi hørte dig sige: " + asMap.get("result")));
+                showFeedback(asMap.get("result"));
             }
         } catch (Exception e) {
             // We need to run setText on UI thread to avoid exception
             this.runOnUiThread(() -> responseTxt.setText(R.string.exceptionDuringUpload));
         }
+    }
+
+    /**
+     * Shows feedback to the user depending on the predicted phonemes
+     */
+    private void showFeedback(String result) {
+        boolean specialCasePresent = specialFeedback(result);
+        if (!specialCasePresent) {
+            if (result.equals(wordList.get(currentWord))) { // Gets the phonemes
+                this.runOnUiThread(() -> responseTxt.setText(getResources().getString(R.string.correctPronunciation, currentWord)));
+            } else {
+                this.runOnUiThread(() -> responseTxt.setText(getResources().getString(R.string.incorrectPronunciation, currentWord)));
+            }
+        }
+    }
+
+    /**
+     * Calls special feedback case if relevant
+     */
+    private boolean specialFeedback(String result) {
+        String[] phonemes = result.split(" ");
+        if (currentWord.equals("pære")) {
+            if (phonemes[0].equals("p")) {
+                this.runOnUiThread(() -> responseTxt.setText(R.string.incorrectPronunciationPtoB));
+                return true;
+            }
+            if (!phonemes[0].equals("pʰ")) {
+                this.runOnUiThread(() -> responseTxt.setText(R.string.incorrectPronunciationP));
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -129,9 +210,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void RequestPermissions() {
-        ActivityCompat.requestPermissions(MainActivity.this, 
-                                          new String[]{RECORD_AUDIO, INTERNET, WRITE_EXTERNAL_STORAGE}, 
-                                          REQUEST_AUDIO_PERMISSION_CODE);
+        ActivityCompat.requestPermissions(MainActivity.this,
+                new String[]{RECORD_AUDIO, INTERNET, WRITE_EXTERNAL_STORAGE},
+                REQUEST_AUDIO_PERMISSION_CODE);
     }
 
     private void startRecording() {
@@ -151,6 +232,7 @@ public class MainActivity extends AppCompatActivity {
 
             responseTxt.setVisibility(View.GONE);
             earImage.setVisibility(View.VISIBLE);
+            earImage.setAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.pulse));
 
             try {
                 mRecorder.prepare();
@@ -168,7 +250,7 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Plays the audio recorded by the user
      */
-    public void playAudio() {
+/*    public void playAudio() {
         MediaPlayer mPlayer = new MediaPlayer();
         try {
             // Prepare player to play recording and play it
@@ -179,6 +261,7 @@ public class MainActivity extends AppCompatActivity {
             Log.e("TAG", "prepare() failed");
         }
     }
+*/
 
     /**
      * Stop the recording and upload it to the API
@@ -188,6 +271,7 @@ public class MainActivity extends AppCompatActivity {
             return;
         }
 
+        earImage.clearAnimation();
         earImage.setVisibility(View.GONE);
         responseTxt.setText(R.string.gettingResource);
         responseTxt.setVisibility(View.VISIBLE);
@@ -209,7 +293,6 @@ public class MainActivity extends AppCompatActivity {
                 } finally {
                     setButtonStylingAndText(recordBtn, R.drawable.rounded_corners_primary, R.string.record);
                 }
-                playAudio();
                 uploadRecordingAndUpdateFeedbackOnResponse();
             }
         }, 500);
