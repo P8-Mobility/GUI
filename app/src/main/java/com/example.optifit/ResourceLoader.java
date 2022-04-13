@@ -43,13 +43,18 @@ public class ResourceLoader {
      * The third element is the feedback to provide the user in the given special case.
      * @return the list of special cases as a list of triples.
      */
-    public ArrayList<Triple<String, String, String>> parseSpecialCasesList() {
-        ArrayList<Triple<String, String, String>> specialFeedbackCases = new ArrayList<>();
+    public ArrayList<ArrayList<String>> parseSpecialCasesList() {
+        ArrayList<ArrayList<String>> specialFeedbackCases = new ArrayList<>();
         TypedArray specialCaseArray = res.obtainTypedArray(R.array.special_feedback_cases);
         List<List<String>> specialList = loadResourcesIntoMap(res, specialCaseArray);
 
+        int specialIndex = 0;
         for (List<String> word : specialList) {
-            specialFeedbackCases.add(new Triple<>(word.get(0), word.get(1), word.get(2)));
+            specialFeedbackCases.add(new ArrayList<>());
+            for (int i = 0; i < word.size(); i++) {
+                specialFeedbackCases.get(specialIndex).add(word.get(i));
+            }
+            specialIndex++;
         }
 
         specialCaseArray.recycle(); // Important!

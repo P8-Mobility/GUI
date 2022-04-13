@@ -18,7 +18,8 @@
     <string-array name="p">
         <item name="expected">pʰ</item>
         <item name="actual">p</item>
-        <item name="feedback">\"p\" blev udtalt som \"b\"</item>
+        <item name="feedbackDan">\"p\" blev udtalt som \"b\"</item>
+        <item name="feedbackAra">بطلاقة "P" لم تنطقت كلمة إجاص بطلاقة </item>
     </string-array>
     <array name="special_feedback_cases">
         <item>@array/p</item>
