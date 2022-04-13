@@ -116,7 +116,7 @@ public class MainActivity extends AppCompatActivity {
                 showFeedback(asMap.get("result"));
             }
         } catch (Exception e) {
-            // We need to run setText on UI thread to avoid exception
+            // We need to run setText on UI thread to avoid exception.
             this.runOnUiThread(() -> responseTxt.setText(R.string.exceptionDuringUpload));
         }
     }
