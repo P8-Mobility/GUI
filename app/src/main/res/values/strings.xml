@@ -5,7 +5,7 @@
     <string name="listen">Lyt</string>
     <string name="exceptionDuringUpload">Der er problemer med serveren. Prøv igen om nogle timer.</string>
     <string name="gettingResourceDan">Evaluerer lydklip…</string>
-    <string name="gettingResourceAra">Evaluerer lydklip.......</string>
+    <string name="gettingResourceAra">تقييم مقطع صوتي...</string>
 
     <!--Feedback-->
     <string name="beforeDan">Hold knappen nede for at få bedømt din udtale :)</string>
