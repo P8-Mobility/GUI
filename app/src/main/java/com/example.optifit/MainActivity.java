@@ -39,13 +39,11 @@ import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.Manifest.permission.INTERNET;
 
-import kotlin.Triple;
-
 public class MainActivity extends AppCompatActivity {
     private TextView wordTxt;
     private Button listenBtn;
     private TextView responseTxt;
-    private TextView responseTxtExtraLan;
+    private TextView responseTxtSecondLan;
     private ImageView earImage;
     private Button recordBtn;
 
@@ -74,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
         fluentPlayer = MediaPlayer.create(this, R.raw.paere);
 
         responseTxt = findViewById(R.id.responseTxt);
-        responseTxtExtraLan = findViewById(R.id.responseTxtExtraLan);
+        responseTxtSecondLan = findViewById(R.id.responseTxtExtraLan);
         earImage = findViewById(R.id.earImage);
 
         initializeWord();
@@ -116,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
                 showFeedback(asMap.get("result"));
             }
         } catch (Exception e) {
-            // We need to run setText on UI thread to avoid exception.
+            // We need to run setText on UI thread to avoid exception
             this.runOnUiThread(() -> responseTxt.setText(R.string.exceptionDuringUpload));
         }
     }
@@ -129,10 +127,10 @@ public class MainActivity extends AppCompatActivity {
         if (!specialCasePresent) {
             if (currentWord.second.equals(result)) {
                 this.runOnUiThread(() -> responseTxt.setText(getString(R.string.correctPronunciationDan, currentWord.first.toLowerCase())));
-                this.runOnUiThread(() -> responseTxtExtraLan.setText(getString(R.string.correctPronunciationAra, currentWord.first.toLowerCase())));
+                this.runOnUiThread(() -> responseTxtSecondLan.setText(getString(R.string.correctPronunciationAra, currentWord.first.toLowerCase())));
             } else {
                 this.runOnUiThread(() -> responseTxt.setText(getString(R.string.incorrectPronunciationDan, currentWord.first.toLowerCase())));
-                this.runOnUiThread(() -> responseTxtExtraLan.setText(getString(R.string.incorrectPronunciationAra, currentWord.first.toLowerCase())));
+                this.runOnUiThread(() -> responseTxtSecondLan.setText(getString(R.string.incorrectPronunciationAra, currentWord.first.toLowerCase())));
             }
         }
     }
@@ -148,7 +146,7 @@ public class MainActivity extends AppCompatActivity {
                     && Arrays.stream(resultPhonemes).anyMatch((s) -> s.equals(specialCase.get(1)))
                     && currentWord.second.indexOf(specialCase.get(0)) == result.indexOf(specialCase.get(1))) {
                 this.runOnUiThread(() -> responseTxt.setText(getString(R.string.incorrectPronunciationSpecialCaseDan, specialCase.get(2))));
-                this.runOnUiThread(() -> responseTxtExtraLan.setText(getString(R.string.incorrectPronunciationSpecialCaseAra, specialCase.get(3))));
+                this.runOnUiThread(() -> responseTxtSecondLan.setText(getString(R.string.incorrectPronunciationSpecialCaseAra, specialCase.get(3))));
                 return true;
             }
         }
@@ -200,7 +198,7 @@ public class MainActivity extends AppCompatActivity {
             prepareRecorder();
 
             responseTxt.setVisibility(View.GONE);
-            responseTxtExtraLan.setVisibility(View.GONE);
+            responseTxtSecondLan.setVisibility(View.GONE);
             earImage.setVisibility(View.VISIBLE);
             earImage.setAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.pulse));
             try {
@@ -255,9 +253,9 @@ public class MainActivity extends AppCompatActivity {
         earImage.clearAnimation();
         earImage.setVisibility(View.GONE);
         responseTxt.setText(R.string.gettingResourceDan);
-        responseTxtExtraLan.setText(R.string.gettingResourceAra);
+        responseTxtSecondLan.setText(R.string.gettingResourceAra);
         responseTxt.setVisibility(View.VISIBLE);
-        responseTxtExtraLan.setVisibility(View.VISIBLE);
+        responseTxtSecondLan.setVisibility(View.VISIBLE);
 
         // Add delay to release event to ensure that the end of the word is also recorded
         Timer buttonTimer = new Timer();

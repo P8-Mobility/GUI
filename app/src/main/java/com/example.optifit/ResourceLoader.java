@@ -37,25 +37,22 @@ public class ResourceLoader {
     }
 
     /**
-     * Loads the list of special cases defined in arrays.xml into a list of triples.
+     * Loads the list of special cases defined in arrays.xml into a list of list, with four elements in the inner list.
      * The first element is the phonemes expected in the case.
      * The second element is the phonemes in the incorrect pronunciation that causes the special case.
-     * The third element is the feedback to provide the user in the given special case.
-     * @return the list of special cases as a list of triples.
+     * The third element is the feedback in Danish to provide the user in the given special case.
+     * The forth element is the feedback in Arabic to provide the user in the given special case.
+     * @return the list of special cases as a list of lists.
      */
     public ArrayList<ArrayList<String>> parseSpecialCasesList() {
         ArrayList<ArrayList<String>> specialFeedbackCases = new ArrayList<>();
         TypedArray specialCaseArray = res.obtainTypedArray(R.array.special_feedback_cases);
         List<List<String>> specialList = loadResourcesIntoMap(res, specialCaseArray);
 
-        int specialIndex = 0;
         for (List<String> word : specialList) {
-            specialFeedbackCases.add(new ArrayList<>());
-            for (int i = 0; i < word.size(); i++) {
-                specialFeedbackCases.get(specialIndex).add(word.get(i));
+            ArrayList<String> wordList = new ArrayList<>(word);
+            specialFeedbackCases.add(wordList);
             }
-            specialIndex++;
-        }
 
         specialCaseArray.recycle(); // Important!
         return specialFeedbackCases;
