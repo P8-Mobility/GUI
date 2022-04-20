@@ -46,30 +46,43 @@
             </TableRow>
         </TableLayout>
 
-        <LinearLayout
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="220dp"
+            android:layout_height="190dp"
             android:layout_margin="10dp"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/responseTxt"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginHorizontal="20dp"
-                android:gravity="center_horizontal|center_vertical"
-                android:text="@string/beforeRecordingText"
-                android:textSize="28sp" />
+
+                <TextView
+                    android:id="@+id/responseTxt"
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp"
+                    android:layout_marginHorizontal="20dp"
+                    android:gravity="center_horizontal|bottom"
+                    android:text="@string/beforeDan"
+
+                    android:textSize="28sp" />
+
+                <TextView
+                        android:id="@+id/responseTxtExtraLan"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_marginHorizontal="20dp"
+                        android:layout_below="@+id/responseTxt"
+                        android:gravity="center_horizontal|center_vertical"
+                        android:text="@string/beforeAra"
+                        android:textSize="28sp"/>
 
             <ImageView
-                android:id="@+id/earImage"
-                android:layout_width="192dp"
-                android:layout_height="192dp"
-                android:layout_gravity="center"
-                android:layoutAnimation="@anim/pulse"
-                android:src="@drawable/ear"
-                android:visibility="gone" />
-        </LinearLayout>
+                    android:id="@+id/earImage"
+                    android:layout_width="192dp"
+                    android:layout_height="192dp"
+                    android:layoutAnimation="@anim/pulse"
+                    android:src="@drawable/ear"
+                    android:layout_centerHorizontal="true"
+                    android:layout_centerVertical="true"
+                    android:visibility="gone"/>
+        </RelativeLayout>
 
         <LinearLayout
             android:layout_width="match_parent"

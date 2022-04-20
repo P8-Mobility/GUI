@@ -2,9 +2,7 @@ package com.example.optifit;
 
 import com.google.gson.Gson;
 
-import android.content.res.Resources;
-import android.content.res.TypedArray;
-import android.graphics.Paint;
+
 import android.media.AudioFormat;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
@@ -32,8 +30,6 @@ import androidx.core.content.ContextCompat;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Hashtable;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Timer;
@@ -43,12 +39,11 @@ import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.Manifest.permission.INTERNET;
 
-import kotlin.Triple;
-
 public class MainActivity extends AppCompatActivity {
     private TextView wordTxt;
     private Button listenBtn;
     private TextView responseTxt;
+    private TextView responseTxtSecondLan;
     private ImageView earImage;
     private Button recordBtn;
 
@@ -62,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
 
     private ResourceLoader resourceLoader;
     ArrayList<Pair<String, String>> wordList = new ArrayList<>();
-    ArrayList<Triple<String, String, String>> specialFeedbackCases = new ArrayList<>();
+    ArrayList<ArrayList<String>> specialFeedbackCases = new ArrayList<>();
     Pair<String, String> currentWord;
 
     @SuppressLint({"RestrictedApi"})
@@ -77,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
         fluentPlayer = MediaPlayer.create(this, R.raw.paere);
 
         responseTxt = findViewById(R.id.responseTxt);
+        responseTxtSecondLan = findViewById(R.id.responseTxtExtraLan);
         earImage = findViewById(R.id.earImage);
 
         initializeWord();
@@ -130,9 +126,11 @@ public class MainActivity extends AppCompatActivity {
         boolean specialCasePresent = specialFeedback(result);
         if (!specialCasePresent) {
             if (currentWord.second.equals(result)) {
-                this.runOnUiThread(() -> responseTxt.setText(getString(R.string.correctPronunciation, currentWord.first.toLowerCase())));
+                this.runOnUiThread(() -> responseTxt.setText(getString(R.string.correctPronunciationDan, currentWord.first.toLowerCase())));
+                this.runOnUiThread(() -> responseTxtSecondLan.setText(getString(R.string.correctPronunciationAra, currentWord.first.toLowerCase())));
             } else {
-                this.runOnUiThread(() -> responseTxt.setText(getString(R.string.incorrectPronunciation, currentWord.first.toLowerCase())));
+                this.runOnUiThread(() -> responseTxt.setText(getString(R.string.incorrectPronunciationDan, currentWord.first.toLowerCase())));
+                this.runOnUiThread(() -> responseTxtSecondLan.setText(getString(R.string.incorrectPronunciationAra, currentWord.first.toLowerCase())));
             }
         }
     }
@@ -141,13 +139,14 @@ public class MainActivity extends AppCompatActivity {
      * Calls special feedback case any case applies to the current word and the pronunciation result
      */
     private boolean specialFeedback(String result) {
-        for (Triple<String, String, String> specialCase : specialFeedbackCases) {
+        for (ArrayList<String> specialCase : specialFeedbackCases) {
             String[] wordPhonemes = currentWord.second.split(" ");
             String[] resultPhonemes = result.split(" ");
-            if (Arrays.stream(wordPhonemes).anyMatch((s) -> s.equals(specialCase.getFirst()))
-                    && Arrays.stream(resultPhonemes).anyMatch((s) -> s.equals(specialCase.getSecond()))
-                    && currentWord.second.indexOf(specialCase.getFirst()) == result.indexOf(specialCase.getSecond())) {
-                this.runOnUiThread(() -> responseTxt.setText(getString(R.string.incorrectPronunciationSpecialCase, specialCase.getThird())));
+            if (Arrays.stream(wordPhonemes).anyMatch((s) -> s.equals(specialCase.get(0)))
+                    && Arrays.stream(resultPhonemes).anyMatch((s) -> s.equals(specialCase.get(1)))
+                    && currentWord.second.indexOf(specialCase.get(0)) == result.indexOf(specialCase.get(1))) {
+                this.runOnUiThread(() -> responseTxt.setText(getString(R.string.incorrectPronunciationSpecialCaseDan, specialCase.get(2))));
+                this.runOnUiThread(() -> responseTxtSecondLan.setText(getString(R.string.incorrectPronunciationSpecialCaseAra, specialCase.get(3))));
                 return true;
             }
         }
@@ -199,9 +198,9 @@ public class MainActivity extends AppCompatActivity {
             prepareRecorder();
 
             responseTxt.setVisibility(View.GONE);
+            responseTxtSecondLan.setVisibility(View.GONE);
             earImage.setVisibility(View.VISIBLE);
             earImage.setAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.pulse));
-
             try {
                 mRecorder.prepare();
             } catch (IOException e) {
@@ -253,8 +252,10 @@ public class MainActivity extends AppCompatActivity {
 
         earImage.clearAnimation();
         earImage.setVisibility(View.GONE);
-        responseTxt.setText(R.string.gettingResource);
+        responseTxt.setText(R.string.gettingResourceDan);
+        responseTxtSecondLan.setText(R.string.gettingResourceAra);
         responseTxt.setVisibility(View.VISIBLE);
+        responseTxtSecondLan.setVisibility(View.VISIBLE);
 
         // Add delay to release event to ensure that the end of the word is also recorded
         Timer buttonTimer = new Timer();
@@ -316,4 +317,5 @@ public class MainActivity extends AppCompatActivity {
         // Used to ensure the app doesn't crash when the user clicks button instead of holding it down
         return null;
     }
+
 }
