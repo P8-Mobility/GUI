@@ -8,7 +8,7 @@
     <string name="gettingResourceAra">تقييم مقطع صوتي...</string>
 
     <!--Feedback-->
-    <string name="beforeDan">Hold knappen nede for at få bedømt din udtale</string>
+    <string name="beforeDan">Hold knappen nede for at få bedømt din udtale.</string>
     <string name = "beforeAra"> اضغط الزر لتقييم نطقك</string>
     <string name="correctPronunciationDan">Du udtalte "%s" flydende. Godt klaret."</string>
     <string name="correctPronunciationAra">لقد نطقت كلمة "%s" بطلاقة جيدة. ممتاز.</string>
