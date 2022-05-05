@@ -28,22 +28,21 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ExecutionException;
 
 import static android.Manifest.permission.RECORD_AUDIO;
 import static android.Manifest.permission.WRITE_EXTERNAL_STORAGE;
 import static android.Manifest.permission.INTERNET;
 
 public class MainActivity extends AppCompatActivity {
-    private TextView wordTxt;
     private Button listenBtn;
-    private TextView responseTxt;
-    private TextView responseTxtSecondLan;
+    private TextView responseTxtTargetLang;
+    private TextView responseTxtNativeLang;
     private ImageView earImage;
     private Button recordBtn;
 
@@ -55,9 +54,7 @@ public class MainActivity extends AppCompatActivity {
     private MediaPlayer fluentPlayer; // For example sound
     private boolean recordingStarted = false;
 
-    private ResourceLoader resourceLoader;
-    ArrayList<Pair<String, String>> wordList = new ArrayList<>();
-    ArrayList<ArrayList<String>> specialFeedbackCases = new ArrayList<>();
+    Map<String, String> wordList;
     Pair<String, String> currentWord;
 
     @SuppressLint({"RestrictedApi"})
@@ -65,14 +62,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.fragment_main);
-        resourceLoader = new ResourceLoader(getResources());
 
         while (!CheckPermissions()) RequestPermissions();
 
         fluentPlayer = MediaPlayer.create(this, R.raw.paere);
 
-        responseTxt = findViewById(R.id.responseTxt);
-        responseTxtSecondLan = findViewById(R.id.responseTxtExtraLan);
+        responseTxtTargetLang = findViewById(R.id.responseTxt);
+        responseTxtNativeLang = findViewById(R.id.responseTxtExtraLan);
         earImage = findViewById(R.id.earImage);
 
         initializeWord();
@@ -80,13 +76,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initializeWord() {
-        wordTxt = findViewById(R.id.wordTxt);
-        wordList = resourceLoader.parseWordList();
-        specialFeedbackCases = resourceLoader.parseSpecialCasesList();
-        currentWord = wordList.stream()
-                .filter((w) -> w.first.equals("Pære")) // Ensures that "Pære" is displayed, should be removed in final product
-                .findFirst().orElse(null);
-        wordTxt.setText(currentWord == null ? "Ord mangler" : '"' + currentWord.first + '"');
+        TextView wordTxt = findViewById(R.id.wordTxt);
+        try {
+            wordList = parseWordPhonemeMap(new FetchWordListTask().execute().get());
+        } catch (ExecutionException | InterruptedException e) {
+            e.printStackTrace();
+        }
+        currentWord = new Pair<>("Pære", wordList.get("Pære"));
+        wordTxt.setText('"' + currentWord.first + '"');
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -106,51 +103,25 @@ public class MainActivity extends AppCompatActivity {
      */
     private void uploadRecordingAndUpdateFeedbackOnResponse() {
         try {
-            String result = new FileUploader().execute().get();
+            String result = new GetPredictionTask().execute().get();
             Gson gson = new Gson();
             Map<String, String> asMap = gson.fromJson(result, Map.class);
             if (asMap.containsKey("status") && Objects.equals(asMap.get("status"), "OK")) {
                 // We need to run setText on UI thread to avoid exception
-                showFeedback(asMap.get("result"));
+                showFeedback(asMap.get("response_target_lang"), asMap.get("response_native_lang"));
             }
         } catch (Exception e) {
             // We need to run setText on UI thread to avoid exception
-            this.runOnUiThread(() -> responseTxt.setText(R.string.exceptionDuringUpload));
+            this.runOnUiThread(() -> responseTxtTargetLang.setText(R.string.exceptionDuringUpload));
         }
     }
 
     /**
      * Shows feedback to the user depending on the predicted phonemes
      */
-    private void showFeedback(String result) {
-        boolean specialCasePresent = specialFeedback(result);
-        if (!specialCasePresent) {
-            if (currentWord.second.equals(result)) {
-                this.runOnUiThread(() -> responseTxt.setText(getString(R.string.correctPronunciationDan, currentWord.first.toLowerCase())));
-                this.runOnUiThread(() -> responseTxtSecondLan.setText(getString(R.string.correctPronunciationAra, currentWord.first.toLowerCase())));
-            } else {
-                this.runOnUiThread(() -> responseTxt.setText(getString(R.string.incorrectPronunciationDan, currentWord.first.toLowerCase())));
-                this.runOnUiThread(() -> responseTxtSecondLan.setText(getString(R.string.incorrectPronunciationAra, currentWord.first.toLowerCase())));
-            }
-        }
-    }
-
-    /**
-     * Calls special feedback case any case applies to the current word and the pronunciation result
-     */
-    private boolean specialFeedback(String result) {
-        for (ArrayList<String> specialCase : specialFeedbackCases) {
-            String[] wordPhonemes = currentWord.second.split(" ");
-            String[] resultPhonemes = result.split(" ");
-            if (Arrays.stream(wordPhonemes).anyMatch((s) -> s.equals(specialCase.get(0)))
-                    && Arrays.stream(resultPhonemes).anyMatch((s) -> s.equals(specialCase.get(1)))
-                    && currentWord.second.indexOf(specialCase.get(0)) == result.indexOf(specialCase.get(1))) {
-                this.runOnUiThread(() -> responseTxt.setText(getString(R.string.incorrectPronunciationSpecialCaseDan, specialCase.get(2))));
-                this.runOnUiThread(() -> responseTxtSecondLan.setText(getString(R.string.incorrectPronunciationSpecialCaseAra, specialCase.get(3))));
-                return true;
-            }
-        }
-        return false;
+    private void showFeedback(String responseTextTargetLang, String responseTextNativeLang ) {
+        this.runOnUiThread(() -> responseTxtTargetLang.setText(responseTextTargetLang));
+        this.runOnUiThread(() -> responseTxtNativeLang.setText(responseTextNativeLang));
     }
 
     /**
@@ -197,8 +168,8 @@ public class MainActivity extends AppCompatActivity {
         if (CheckPermissions()) {
             prepareRecorder();
 
-            responseTxt.setVisibility(View.GONE);
-            responseTxtSecondLan.setVisibility(View.GONE);
+            responseTxtTargetLang.setVisibility(View.GONE);
+            responseTxtNativeLang.setVisibility(View.GONE);
             earImage.setVisibility(View.VISIBLE);
             earImage.setAnimation(AnimationUtils.loadAnimation(getApplicationContext(), R.anim.pulse));
             try {
@@ -252,10 +223,10 @@ public class MainActivity extends AppCompatActivity {
 
         earImage.clearAnimation();
         earImage.setVisibility(View.GONE);
-        responseTxt.setText(R.string.gettingResourceDan);
-        responseTxtSecondLan.setText(R.string.gettingResourceAra);
-        responseTxt.setVisibility(View.VISIBLE);
-        responseTxtSecondLan.setVisibility(View.VISIBLE);
+        responseTxtTargetLang.setText(R.string.gettingResourceDan);
+        responseTxtNativeLang.setText(R.string.gettingResourceAra);
+        responseTxtTargetLang.setVisibility(View.VISIBLE);
+        responseTxtNativeLang.setVisibility(View.VISIBLE);
 
         // Add delay to release event to ensure that the end of the word is also recorded
         Timer buttonTimer = new Timer();
@@ -318,4 +289,16 @@ public class MainActivity extends AppCompatActivity {
         return null;
     }
 
+    private Map<String, String> parseWordPhonemeMap(String jsonString) {
+        Map wordPhonemeMap;
+
+        Gson gson = new Gson();
+        Map asMap = gson.fromJson(jsonString, Map.class);
+        if (asMap.containsKey("status") && Objects.equals(asMap.get("status"), "OK") && asMap.containsKey("words")) {
+            wordPhonemeMap = (Map) asMap.get("result");
+            return wordPhonemeMap;
+        } else {
+            return new HashMap<>();
+        }
+    }
 }
