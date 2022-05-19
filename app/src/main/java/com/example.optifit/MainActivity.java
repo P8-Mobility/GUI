@@ -228,7 +228,7 @@ public class MainActivity extends AppCompatActivity {
      * Stop the recording and upload it to the API
      */
     public void stopRecording() {
-        if (null == mRecorder) {
+        if (mRecorder == null) {
             return;
         }
 
@@ -297,7 +297,9 @@ public class MainActivity extends AppCompatActivity {
 
     private View.OnClickListener getButtonClickListener() {
         // Used to ensure the app doesn't crash when the user clicks button instead of holding it down
-        return null;
+        return v -> {
+
+        };
     }
 
     private Map<String, String> parseWordPhonemeMap(String jsonString) {

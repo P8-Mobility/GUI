@@ -1,22 +1,15 @@
 <resources>
-    <string name="app_name">/\'snak/</string>
+    <string name="appName">/\'snak/</string>
     <string name="record">Optag udtale</string>
     <string name="recording">Optager…</string>
     <string name="listen">Lyt</string>
     <string name="exceptionDuringUploadDan">Vi oplever tekniske problemer. Prøv igen senere.</string>
-    <string name="exceptionDuringUploadAra">ARABSIK DUDE</string>
+    <string name="exceptionDuringUploadAra">حالياً نواجه مشاكل تقنيه. الرجاء معاودة المحاولة في وقت لاحق.</string>
     <string name="gettingResourceDan">Evaluerer lydklip…</string>
     <string name="gettingResourceAra">تقييم مقطع صوتي...</string>
 
     <!--Feedback-->
     <string name="beforeDan">Hold knappen nede for at få bedømt din udtale.</string>
-    <string name = "beforeAra"> اضغط الزر لتقييم نطقك</string>
-    <string name="correctPronunciationDan">Du udtalte "%s" flydende. Godt klaret."</string>
-    <string name="correctPronunciationAra">لقد نطقت كلمة "%s" بطلاقة جيدة. ممتاز.</string>
-    <string name="incorrectPronunciationDan">Du udtalte ikke "%s" helt flydende. Prøv igen!</string>
-    <string name="incorrectPronunciationAra">نك لم تنطقت كلمة "%s" بطلاقة. حاول مرة ثانية !</string>
-    <string name="incorrectPronunciationSpecialCaseDan">Du udtalte ikke ordet helt flydende. %s.</string>
-    <string name="incorrectPronunciationSpecialCaseAra">م تنطقت كلمة ordet بطلاقة. %s.</string>
-
+    <string name="beforeAra"> اضغط الزر لتقييم نطقك</string>
 </resources>
 
