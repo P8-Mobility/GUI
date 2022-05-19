@@ -1,9 +1,10 @@
 <resources>
-    <string name="app_name">Cool App Name</string>
+    <string name="app_name">/\'snak/</string>
     <string name="record">Optag udtale</string>
     <string name="recording">Optager…</string>
     <string name="listen">Lyt</string>
-    <string name="exceptionDuringUpload">Der er problemer med serveren. Prøv igen om nogle timer.</string>
+    <string name="exceptionDuringUploadDan">Vi oplever tekniske problemer. Prøv igen senere.</string>
+    <string name="exceptionDuringUploadAra">ARABSIK DUDE</string>
     <string name="gettingResourceDan">Evaluerer lydklip…</string>
     <string name="gettingResourceAra">تقييم مقطع صوتي...</string>
 

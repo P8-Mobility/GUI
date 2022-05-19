@@ -78,12 +78,22 @@ public class MainActivity extends AppCompatActivity {
     private void initializeWord() {
         TextView wordTxt = findViewById(R.id.wordTxt);
         try {
-            wordList = parseWordPhonemeMap(new FetchWordListTask().execute().get());
+            String serverWordListResponse = new FetchWordListTask().execute().get();
+            if (!serverWordListResponse.isEmpty()) {
+                wordList = parseWordPhonemeMap(serverWordListResponse);
+            }
         } catch (ExecutionException | InterruptedException e) {
             e.printStackTrace();
         }
-        currentWord = new Pair<>("Pære", wordList.get("Pære"));
-        wordTxt.setText('"' + currentWord.first + '"');
+
+        if (wordList == null) {
+            this.runOnUiThread(() -> responseTxtTargetLang.setText(R.string.exceptionDuringUploadDan));
+            this.runOnUiThread(() -> responseTxtNativeLang.setText(R.string.exceptionDuringUploadAra));
+            wordTxt.setText("ERROR");
+        } else {
+            currentWord = new Pair<>("Pære", wordList.get("pære"));
+            wordTxt.setText('"' + currentWord.first + '"');
+        }
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -112,7 +122,8 @@ public class MainActivity extends AppCompatActivity {
             }
         } catch (Exception e) {
             // We need to run setText on UI thread to avoid exception
-            this.runOnUiThread(() -> responseTxtTargetLang.setText(R.string.exceptionDuringUpload));
+            this.runOnUiThread(() -> responseTxtTargetLang.setText(R.string.exceptionDuringUploadDan));
+            this.runOnUiThread(() -> responseTxtNativeLang.setText(R.string.exceptionDuringUploadAra));
         }
     }
 
